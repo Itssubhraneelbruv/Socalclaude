@@ -376,9 +376,43 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, Fragment } = React;
+    const { useState, useEffect, Fragment } = React;
 
-    const ALERTS = [
+    // Normalize RMSSD (observed range 5–42.3 ms) to a 0–100 recovery score
+    const rmssdToScore = v => Math.round((v - 5) / (42.3 - 5) * 100);
+
+    function buildJimmyAlert(data) {
+      const ws    = data.week_summary;
+      const daily = data.daily;
+      const fri   = daily[4]; // Friday
+      const tue   = daily[1];
+      const wed   = daily[2];
+      return {
+        id: 4,
+        name: "Jimmy",
+        initials: "JM",
+        role: "Software Engineer",
+        team: "Engineering",
+        risk: "High",
+        score: rmssdToScore(ws.night_rmssd_ms.friday),
+        trend: daily.map(d => rmssdToScore(d.physiology.night_rmssd_ms)),
+        date: "Aug 8, 2026",
+        dataSource: "wearable",
+        scoreLabel: "Recovery Score",
+        scoreSub: "Based on overnight RMSSD · ↓ Lower = higher strain",
+        trendLabel: "7-Day RMSSD Trend",
+        signalLabel: "Flagged EMA Check-ins",
+        signalIcon: "📋",
+        summary: `Wearable data shows overnight RMSSD dropped ${Math.abs(ws.night_rmssd_ms.pct_change_mon_to_fri)}% Mon→Fri (${ws.night_rmssd_ms.monday} → ${ws.night_rmssd_ms.friday} ms). Recovery has not returned after the weekend — Sunday RMSSD matches Friday's floor. ${ws.after_hours_work_minutes_total} min of after-hours work this week. Self-report hit 7/7 on fatigue and detachment by Friday while physiology continued to deteriorate.`,
+        snippets: [
+          { time: "Fri EMA · Aug 8, 5:00 PM", text: fri.ema.post_shift.free_text },
+          { time: "Wed EMA · Aug 6, 5:04 PM", text: wed.ema.post_shift.free_text },
+          { time: "Tue EMA · Aug 5, 5:12 PM", text: tue.ema.post_shift.free_text },
+        ],
+      };
+    }
+
+    const BASE_ALERTS = [
       {
         id: 1,
         name: "Sarah Chen",
@@ -389,6 +423,11 @@
         score: 23,
         trend: [68, 60, 51, 43, 37, 29, 23],
         date: "Aug 7, 2026",
+        scoreLabel: "Sentiment Score",
+        scoreSub: "↓ Lower = higher burnout risk",
+        trendLabel: "7-Day Trend",
+        signalLabel: "Flagged Slack Messages",
+        signalIcon: "💬",
         summary: "AI detected consistently negative sentiment over 8 days. Messages indicate exhaustion, frustration with workload, and sharp decline in engagement across team channels.",
         snippets: [
           { time: "Yesterday 11:42 PM", text: "I'll just handle it myself, no one else has time anyway 😔" },
@@ -406,6 +445,11 @@
         score: 31,
         trend: [72, 65, 57, 49, 44, 38, 31],
         date: "Aug 7, 2026",
+        scoreLabel: "Sentiment Score",
+        scoreSub: "↓ Lower = higher burnout risk",
+        trendLabel: "7-Day Trend",
+        signalLabel: "Flagged Slack Messages",
+        signalIcon: "💬",
         summary: "Sentiment analysis flagged high-stress language and overwork indicators across 12 Slack channels over 5 days. Negative-to-positive message ratio is 4:1.",
         snippets: [
           { time: "Yesterday 10:18 PM", text: "I'll skip standup tomorrow, been up since 5am" },
@@ -423,6 +467,11 @@
         score: 45,
         trend: [73, 69, 65, 60, 56, 51, 45],
         date: "Aug 6, 2026",
+        scoreLabel: "Sentiment Score",
+        scoreSub: "↓ Lower = higher burnout risk",
+        trendLabel: "7-Day Trend",
+        signalLabel: "Flagged Slack Messages",
+        signalIcon: "💬",
         summary: "Moderate burnout signals detected. Increased after-hours messaging and a subtle language shift toward disengagement have been observed over the past week.",
         snippets: [
           { time: "Wednesday 11:55 PM", text: "just finishing up the last mockups, won't be long" },
@@ -432,10 +481,11 @@
       },
     ];
 
-    const TEAM_STATS = [
+    const BASE_TEAM_STATS = [
       { team: "Platform Team", alerts: 1, risk: "high" },
       { team: "Growth Team",   alerts: 1, risk: "high" },
       { team: "Design Team",   alerts: 1, risk: "medium" },
+      { team: "Engineering",   alerts: 1, risk: "high" },
       { team: "Backend Team",  alerts: 0, risk: "low" },
     ];
 
@@ -469,14 +519,22 @@
 
     function App() {
       const [idx, setIdx]             = useState(0);
+      const [alerts, setAlerts]       = useState(BASE_ALERTS);
       const [assigned, setAssigned]   = useState(new Set());
       const [dismissed, setDismissed] = useState(new Set());
       const [activeNav, setActiveNav] = useState("Alerts");
       const [activeTab, setActiveTab] = useState("Dashboard");
 
-      const alert      = ALERTS[idx];
-      const total      = ALERTS.length;
-      const pending    = ALERTS.filter(a => !assigned.has(a.id) && !dismissed.has(a.id)).length;
+      useEffect(() => {
+        fetch("jimmy_week.json")
+          .then(r => r.json())
+          .then(data => setAlerts(prev => [...prev, buildJimmyAlert(data)]))
+          .catch(err => console.warn("Could not load jimmy_week.json:", err));
+      }, []);
+
+      const alert      = alerts[idx] ?? alerts[0];
+      const total      = alerts.length;
+      const pending    = alerts.filter(a => !assigned.has(a.id) && !dismissed.has(a.id)).length;
       const isAssigned  = assigned.has(alert.id);
       const isDismissed = dismissed.has(alert.id);
       const accent      = alert.risk === "High" ? "#c0392b" : "#e07b54";
@@ -554,7 +612,7 @@
                 <div className="slide-nav">
                   <button className="slide-btn" onClick={() => setIdx(i => Math.max(0, i - 1))} disabled={idx === 0}>←</button>
                   <div className="slide-dots">
-                    {ALERTS.map((a, i) => (
+                    {alerts.map((a, i) => (
                       <button
                         key={a.id}
                         className={[
@@ -595,14 +653,14 @@
 
                   <div className="sentiment-row">
                     <div>
-                      <div className="score-label">Sentiment Score</div>
+                      <div className="score-label">{alert.scoreLabel}</div>
                       <div className="score-value" style={{ color: accent }}>
                         {alert.score}<span className="score-max">/100</span>
                       </div>
-                      <div className="score-sub">↓ Lower = higher burnout risk</div>
+                      <div className="score-sub">{alert.scoreSub}</div>
                     </div>
                     <div className="chart-wrap">
-                      <div className="chart-label">7-Day Trend</div>
+                      <div className="chart-label">{alert.trendLabel}</div>
                       <TrendChart data={alert.trend} color={accent} />
                     </div>
                   </div>
@@ -613,11 +671,11 @@
                   </div>
 
                   <div className="snippets">
-                    <div className="section-label">Flagged Slack Messages</div>
+                    <div className="section-label">{alert.signalLabel}</div>
                     {alert.snippets.map((s, i) => (
                       <div key={i} className="snippet">
                         <div className="snippet-meta">
-                          <span>💬</span>
+                          <span>{alert.signalIcon}</span>
                           <span className="snippet-time">{s.time}</span>
                         </div>
                         <div className="snippet-text">"{s.text}"</div>
@@ -655,11 +713,11 @@
                   </div>
                   <div className="stat-cards">
                     <div className="stat-card high">
-                      <div className="stat-num">{ALERTS.filter(a => a.risk === "High").length}</div>
+                      <div className="stat-num">{alerts.filter(a => a.risk === "High").length}</div>
                       <div className="stat-lbl">High Risk</div>
                     </div>
                     <div className="stat-card medium">
-                      <div className="stat-num">{ALERTS.filter(a => a.risk === "Medium").length}</div>
+                      <div className="stat-num">{alerts.filter(a => a.risk === "Medium").length}</div>
                       <div className="stat-lbl">Medium Risk</div>
                     </div>
                     <div className="stat-card green">
@@ -680,7 +738,7 @@
                       </tr>
                     </thead>
                     <tbody>
-                      {TEAM_STATS.map(t => (
+                      {BASE_TEAM_STATS.map(t => (
                         <tr key={t.team}>
                           <td>{t.team}</td>
                           <td>{t.alerts}</td>
