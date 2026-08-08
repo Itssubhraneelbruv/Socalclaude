@@ -1,0 +1,2186 @@
+{
+  "dataset_id": "overachiever-work-chat-v1",
+  "version": "1.0.0",
+  "generated_at": "2026-08-08",
+  "synthetic": true,
+  "disclaimer": "All actors, companies, messages and telemetry in this file are fictional and generated for model development / evaluation. No real person is represented.",
+  "language": "ko-KR (primary), en translation provided per message",
+  "observation_window": {
+    "start": "2026-05-11",
+    "end": "2026-08-02",
+    "weeks": 12,
+    "timezone": "Asia/Seoul"
+  },
+  "persona": {
+    "persona_id": "P-OVERACHIEVER-01",
+    "archetype": "overachiever",
+    "display_name": "박지원",
+    "handle": "@jiwon",
+    "role": "Senior Backend Engineer",
+    "team": "Payments Platform",
+    "tenure_years": 4.5,
+    "total_experience_years": 8,
+    "archetype_traits": [
+      "자기 기준(self-set standard)이 조직 기준보다 항상 높음",
+      "요청받지 않은 범위까지 스스로 확장해서 떠안음 (self_imposed demand)",
+      "'괜찮다/문제없다'가 기본 응답 — 부정 신호를 언어화하지 않음 (high disclosure_bias)",
+      "인정/보상보다 투입이 선행되며, 보상 지연 시 ERI가 급격히 악화",
+      "동료 지원·온보딩·중재 등 비공식 노동을 자발적으로 흡수 (care_burden)",
+      "무너질 때 절벽형(acute)이 아니라 서서히 침식되는 형태 (chronic_erosion)"
+    ],
+    "baseline_profile": {
+      "typical_weekly_hours": 44,
+      "typical_response_latency_min": 6,
+      "typical_last_activity": "19:40",
+      "self_report_style": "understated / minimizing"
+    }
+  },
+  "actors": [
+    { "id": "jiwon", "name": "박지원", "role": "Senior BE Engineer", "is_subject": true },
+    { "id": "minseok", "name": "최민석", "role": "Engineering Manager (지원의 매니저)", "is_subject": false },
+    { "id": "haneul", "name": "이하늘", "role": "Senior BE Engineer (동료·친한 사이)", "is_subject": false },
+    { "id": "yuna", "name": "정유나", "role": "Junior BE Engineer (신규 입사, 온보딩 대상)", "is_subject": false },
+    { "id": "daniel", "name": "Daniel Cho", "role": "Product Manager (우선순위 변경 주체)", "is_subject": false },
+    { "id": "sora", "name": "김소라", "role": "Staff Engineer (타 팀, 오너십 경계 충돌)", "is_subject": false },
+    { "id": "bot_pulse", "name": "PulseBot", "role": "주간 펄스 서베이 봇", "is_subject": false }
+  ],
+  "channels": [
+    { "id": "team-payments", "type": "public_channel", "desc": "팀 공용 채널" },
+    { "id": "dm-minseok", "type": "dm", "desc": "매니저와의 1:1 DM" },
+    { "id": "dm-haneul", "type": "dm", "desc": "동료와의 사적 DM (가장 낮은 자기검열)" },
+    { "id": "dm-yuna", "type": "dm", "desc": "주니어 멘토링 DM (care_burden 소스)" },
+    { "id": "war-room", "type": "incident_channel", "desc": "장애 대응 채널" },
+    { "id": "1on1-notes", "type": "structured_doc", "desc": "1:1 미팅 노트 (자유서술)" },
+    { "id": "retro", "type": "structured_doc", "desc": "스프린트 회고 코멘트" },
+    { "id": "pulse-survey", "type": "survey", "desc": "주간 펄스 서베이 응답 (자기보고)" }
+  ],
+  "feature_schema": [
+    { "name": "demand_load", "meaning": "Objective volume: hours, meeting density, ticket/PR throughput, after-hours activity", "type": "float", "range": [0, 1], "source": "telemetry" },
+    { "name": "demand_source", "meaning": "Where the load originates: external (assigned) vs self_imposed (self-set standard)", "type": "distribution", "keys": ["external", "self_imposed"], "source": "text + task provenance" },
+    { "name": "eri_ratio", "meaning": "Effort ÷ Reward (recognition, pay, advancement, status). >1 = imbalance", "type": "float", "range": [0, 3], "threshold": 1.0, "source": "telemetry + text" },
+    { "name": "exhaustion", "meaning": "MBI-GS dimension: emotional exhaustion", "type": "float", "range": [0, 1], "source": "text + telemetry" },
+    { "name": "cynicism", "meaning": "MBI-GS dimension: depersonalization / cynicism", "type": "float", "range": [0, 1], "source": "text" },
+    { "name": "efficacy", "meaning": "MBI-GS dimension: professional efficacy (REVERSE-SCORED — low value = high burnout)", "type": "float", "range": [0, 1], "reverse_scored": true, "source": "text" },
+    { "name": "sentiment_trend", "meaning": "Slope of sentiment in free-text (surveys, 1:1 notes, retro comments)", "type": "float", "range": [-1, 1], "unit": "sentiment delta / week", "source": "free_text only" },
+    { "name": "disclosure_bias", "meaning": "Gap between objective signal and self-report. High = 'I'm fine' while signals say otherwise", "type": "float", "range": [0, 1], "source": "telemetry ⟷ self_report gap" },
+    { "name": "role_clarity", "meaning": "Clarity of ownership, success criteria, decision rights", "type": "float", "range": [0, 1], "direction": "higher_is_better", "source": "text" },
+    { "name": "priority_volatility", "meaning": "Rate of goal/priority reversal per unit time", "type": "float", "range": [0, 1], "source": "backlog events + text" },
+    { "name": "emotional_labor", "meaning": "Surface acting: displaying required emotion ≠ felt emotion", "type": "float", "range": [0, 1], "source": "cross-channel affect mismatch" },
+    { "name": "care_burden", "meaning": "Uncompensated support given to teammates (listening, mediating, onboarding)", "type": "float", "range": [0, 1], "source": "text + calendar" },
+    { "name": "stress_index", "meaning": "Acute arousal proxy: response latency, late-night activity, sleep-window erosion", "type": "float", "range": [0, 1], "source": "telemetry" },
+    { "name": "onset_shape", "meaning": "acute_collapse (fast, cliff-edge) vs chronic_erosion (slow, monotonic)", "type": "categorical", "values": ["acute_collapse", "chronic_erosion", "stable"], "source": "trajectory fit" }
+  ],
+  "narrative_phases": [
+    { "phase": 1, "weeks": [1, 2], "label": "baseline_high_performer", "summary": "높은 자기 기준으로 잘 굴러가는 상태. 초과근무는 대부분 self_imposed. ERI ≈ 1." },
+    { "phase": 2, "weeks": [3, 4], "label": "scope_creep_and_care_load", "summary": "주니어 온보딩 배정 + 첫 우선순위 뒤집기. demand_load / care_burden 상승, role_clarity 하락 시작." },
+    { "phase": 3, "weeks": [5, 6], "label": "ownership_ambiguity", "summary": "타 팀과 오너십 경계 충돌. 야간 활동 증가하지만 자기보고는 여전히 '괜찮음' → disclosure_bias 확대." },
+    { "phase": 4, "weeks": [7, 8], "label": "reward_shock", "summary": "승진 사이클에서 누락, 동료가 승진. ERI 1.6→1.7로 급등, cynicism 최초 출현, emotional_labor 급증." },
+    { "phase": 5, "weeks": [9, 10], "label": "erosion_and_incident", "summary": "수면 구간 침식(새벽 커밋), 장애 대응으로 stress_index 최고점. efficacy 하락 본격화." },
+    { "phase": 6, "weeks": [11, 12], "label": "withdrawal_then_partial_disclosure", "summary": "철수·냉소·efficacy 붕괴 후, 1:1에서 처음으로 부분 자기개방 → disclosure_bias 급락. 붕괴 형태는 chronic_erosion." }
+  ],
+  "messages": [
+    {
+      "msg_id": "m001",
+      "ts": "2026-05-11T09:12:00+09:00",
+      "week": 1,
+      "channel": "team-payments",
+      "author": "minseok",
+      "text": "이번 스프린트 목표 공유합니다. 정산 배치 리팩터링 1단계 마무리, 그리고 결제 웹훅 재시도 로직 안정화. 지원님이 배치 쪽 리드해주세요.",
+      "text_en": "Sharing this sprint's goals: finish phase 1 of the settlement batch refactor, and stabilize payment webhook retries. Jiwon, please lead the batch side.",
+      "after_hours": false
+    },
+    {
+      "msg_id": "m002",
+      "ts": "2026-05-11T09:14:00+09:00",
+      "week": 1,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "네 맡을게요. 그리고 배치 손보는 김에 옆에 붙어있는 레거시 리컨실 잡도 같이 정리하면 나중에 두 번 안 건드려도 될 것 같아서, 그 부분도 같이 볼게요.",
+      "text_en": "Sure, I'll take it. And while I'm in the batch code, I'll also clean up the legacy reconciliation job next to it so we don't have to touch this twice later.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": 0.55,
+        "scope_expansion": true,
+        "demand_source": "self_imposed",
+        "self_imposed_addition": "레거시 리컨실 잡 — 스프린트 범위 밖, 본인이 자발적으로 추가",
+        "emotional_labor": 0.1,
+        "care_burden": 0.0,
+        "disclosure_gap": 0.05
+      }
+    },
+    {
+      "msg_id": "m003",
+      "ts": "2026-05-11T09:15:00+09:00",
+      "week": 1,
+      "channel": "team-payments",
+      "author": "minseok",
+      "text": "리컨실까지는 이번 스프린트 범위 아닌데 괜찮겠어요?",
+      "text_en": "Reconciliation isn't in this sprint's scope — are you sure?",
+      "after_hours": false
+    },
+    {
+      "msg_id": "m004",
+      "ts": "2026-05-11T09:16:00+09:00",
+      "week": 1,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "네 어차피 컨텍스트 다 올라와 있어서요. 반나절이면 돼요 😄",
+      "text_en": "Yeah, I already have all the context loaded. Half a day, tops 😄",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": 0.6,
+        "demand_source": "self_imposed",
+        "underestimation_marker": true,
+        "emotional_labor": 0.15,
+        "disclosure_gap": 0.1
+      }
+    },
+    {
+      "msg_id": "m005",
+      "ts": "2026-05-12T20:41:00+09:00",
+      "week": 1,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "배치 1단계 PR 올렸습니다. 테스트 커버리지 82%까지 올려놨고 롤백 스크립트도 같이 넣었어요. 리뷰 편하게 부탁드려요!",
+      "text_en": "Batch phase-1 PR is up. Pushed test coverage to 82% and included a rollback script. Review at your leisure!",
+      "after_hours": true,
+      "annotations": {
+        "sentiment": 0.65,
+        "over_delivery_marker": true,
+        "demand_source": "self_imposed",
+        "emotional_labor": 0.1,
+        "disclosure_gap": 0.1
+      }
+    },
+    {
+      "msg_id": "m006",
+      "ts": "2026-05-13T11:02:00+09:00",
+      "week": 1,
+      "channel": "dm-haneul",
+      "author": "haneul",
+      "text": "PR 봤는데 롤백 스크립트까지 왜 썼어 ㅋㅋ 아무도 요구 안 했잖아",
+      "text_en": "Saw your PR — why'd you even write a rollback script lol, nobody asked for that",
+      "after_hours": false
+    },
+    {
+      "msg_id": "m007",
+      "ts": "2026-05-13T11:05:00+09:00",
+      "week": 1,
+      "channel": "dm-haneul",
+      "author": "jiwon",
+      "text": "없으면 내가 불안해서. 그리고 배포날 새벽에 문제 터지면 결국 내가 붙게 되잖아. 미리 해두는 게 싸게 먹혀.",
+      "text_en": "It makes me anxious not to have one. And if something blows up at 3am on release day, I'm the one who ends up on it anyway. Cheaper to do it upfront.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": 0.2,
+        "demand_source": "self_imposed",
+        "anticipatory_control_marker": true,
+        "emotional_labor": 0.0,
+        "disclosure_gap": 0.0
+      }
+    },
+    {
+      "msg_id": "m008",
+      "ts": "2026-05-14T17:30:00+09:00",
+      "week": 1,
+      "channel": "1on1-notes",
+      "author": "jiwon",
+      "text": "이번 주 좋았습니다. 배치 리팩터링은 예상보다 잘 풀렸고, 리컨실 잡도 같이 정리해서 다음 스프린트 부담을 좀 덜어놨어요. 다음 주엔 웹훅 재시도 쪽 설계 문서 먼저 쓰려고 합니다.",
+      "text_en": "Good week. The batch refactor went better than expected, and I also cleaned up the reconciliation job to lighten next sprint. Next week I'll start with the design doc for webhook retries.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": 0.62,
+        "efficacy_signal": 0.9,
+        "emotional_labor": 0.15,
+        "disclosure_gap": 0.08
+      }
+    },
+    {
+      "msg_id": "m009",
+      "ts": "2026-05-15T16:20:00+09:00",
+      "week": 1,
+      "channel": "pulse-survey",
+      "author": "jiwon",
+      "text": "[에너지 4/5] [업무량 적정 3/5] 자유서술: 바쁘지만 제가 좋아서 하는 일이라 괜찮습니다.",
+      "text_en": "[Energy 4/5] [Workload appropriate 3/5] Free text: Busy, but it's work I choose to do, so I'm fine.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": 0.5,
+        "self_report_energy": 4,
+        "disclosure_gap": 0.1,
+        "emotional_labor": 0.2
+      }
+    },
+    {
+      "msg_id": "m010",
+      "ts": "2026-05-18T09:40:00+09:00",
+      "week": 2,
+      "channel": "team-payments",
+      "author": "daniel",
+      "text": "웹훅 재시도 건은 그대로 가고요, 추가로 이번 분기 OKR에 '가맹점 셀프 정산 조회' 붙었습니다. 아직 확정은 아닌데 미리 스펙 좀 봐주실 수 있을까요?",
+      "text_en": "Webhook retries stay as-is. Also, 'merchant self-serve settlement lookup' got added to this quarter's OKRs. Not final yet, but could someone pre-review the spec?",
+      "after_hours": false
+    },
+    {
+      "msg_id": "m011",
+      "ts": "2026-05-18T09:44:00+09:00",
+      "week": 2,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "제가 볼게요. 정산 도메인은 제가 제일 최근에 만졌으니까 제가 보는 게 빠를 거예요.",
+      "text_en": "I'll take it. I touched the settlement domain most recently, so it'll be fastest if I look.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": 0.45,
+        "demand_source": "self_imposed",
+        "scope_expansion": true,
+        "emotional_labor": 0.15,
+        "disclosure_gap": 0.12
+      }
+    },
+    {
+      "msg_id": "m012",
+      "ts": "2026-05-19T22:58:00+09:00",
+      "week": 2,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "스펙 코멘트 40개쯤 달아뒀습니다. 엣지케이스 몇 개는 지금 구조로는 못 막아서 대안 2개 같이 적어놨어요.",
+      "text_en": "Left about 40 comments on the spec. A few edge cases can't be covered with the current structure, so I wrote up two alternatives.",
+      "after_hours": true,
+      "annotations": {
+        "sentiment": 0.35,
+        "over_delivery_marker": true,
+        "demand_source": "self_imposed",
+        "emotional_labor": 0.2,
+        "disclosure_gap": 0.15
+      }
+    },
+    {
+      "msg_id": "m013",
+      "ts": "2026-05-20T10:15:00+09:00",
+      "week": 2,
+      "channel": "team-payments",
+      "author": "daniel",
+      "text": "와 감사합니다 🙏 역시 지원님한테 맡기면 편해요",
+      "text_en": "Wow, thank you 🙏 Things are always easy when I hand them to Jiwon",
+      "after_hours": false,
+      "annotations": {
+        "reward_type": "light_praise",
+        "reward_weight": 0.15,
+        "note": "인정 신호는 있으나 지위·보상으로 전환되지 않는 종류 — ERI 분모에 거의 기여하지 않음"
+      }
+    },
+    {
+      "msg_id": "m014",
+      "ts": "2026-05-21T13:05:00+09:00",
+      "week": 2,
+      "channel": "retro",
+      "author": "jiwon",
+      "text": "Keep: 배치 리팩터링 페이스. Problem: 스펙이 확정 전에 들어오는 게 좀 많았습니다. Try: 확정 전 검토는 타임박스 걸어보면 좋겠습니다.",
+      "text_en": "Keep: batch refactor pace. Problem: a lot of specs arriving before they're finalized. Try: timebox pre-finalization reviews.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": 0.1,
+        "first_friction_signal": true,
+        "priority_volatility_signal": 0.35,
+        "emotional_labor": 0.25,
+        "disclosure_gap": 0.15
+      }
+    },
+    {
+      "msg_id": "m015",
+      "ts": "2026-05-22T16:10:00+09:00",
+      "week": 2,
+      "channel": "pulse-survey",
+      "author": "jiwon",
+      "text": "[에너지 4/5] [업무량 적정 3/5] 자유서술: 일이 조금 늘었지만 관리 가능한 수준입니다.",
+      "text_en": "[Energy 4/5] [Workload appropriate 3/5] Free text: Work has grown a bit but it's manageable.",
+      "after_hours": false,
+      "annotations": { "sentiment": 0.4, "self_report_energy": 4, "disclosure_gap": 0.14, "emotional_labor": 0.22 }
+    },
+    {
+      "msg_id": "m016",
+      "ts": "2026-05-25T09:05:00+09:00",
+      "week": 3,
+      "channel": "team-payments",
+      "author": "minseok",
+      "text": "유나님이 오늘부터 합류했습니다 🎉 온보딩 버디는 지원님이 맡아주기로 했어요. 지원님, 이번 스프린트 할당은 그대로 두고 온보딩은 여유 있게 봐주세요.",
+      "text_en": "Yuna joins us today 🎉 Jiwon has agreed to be the onboarding buddy. Jiwon, your sprint allocation stays the same — take onboarding at a relaxed pace.",
+      "after_hours": false,
+      "annotations": {
+        "external_assignment": true,
+        "capacity_adjustment": false,
+        "note": "부하가 추가되었지만 기존 할당은 감산되지 않음 — 구조적 과부하 시작점"
+      }
+    },
+    {
+      "msg_id": "m017",
+      "ts": "2026-05-25T09:07:00+09:00",
+      "week": 3,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "환영합니다 유나님! 온보딩 문서 오늘 중으로 정리해서 드릴게요. 첫 주는 매일 30분씩 페어 잡아둘게요.",
+      "text_en": "Welcome, Yuna! I'll put together onboarding docs today. I'll block 30 min of pairing daily for your first week.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": 0.5,
+        "demand_source": "self_imposed",
+        "care_burden": 0.6,
+        "scope_expansion": true,
+        "note": "'여유 있게'라는 지시를 받았으나 스스로 매일 30분 고정 페어링으로 상향",
+        "emotional_labor": 0.2,
+        "disclosure_gap": 0.2
+      }
+    },
+    {
+      "msg_id": "m018",
+      "ts": "2026-05-26T21:33:00+09:00",
+      "week": 3,
+      "channel": "dm-yuna",
+      "author": "yuna",
+      "text": "지원님 이 시간에 죄송한데... 로컬 환경에서 결제 목 서버가 계속 죽어요 😢",
+      "text_en": "Jiwon, sorry to message this late... the payment mock server keeps dying in my local env 😢",
+      "after_hours": true
+    },
+    {
+      "msg_id": "m019",
+      "ts": "2026-05-26T21:35:00+09:00",
+      "week": 3,
+      "channel": "dm-yuna",
+      "author": "jiwon",
+      "text": "괜찮아요, 저 아직 켜져 있어요. 화면 공유 잡을까요? 이거 원래 첫 주에 다 겪는 거라 유나님 잘못 아니에요.",
+      "text_en": "No problem, I'm still online. Want to hop on a screen share? Everyone hits this in week one — it's not on you.",
+      "after_hours": true,
+      "annotations": {
+        "sentiment": 0.35,
+        "care_burden": 0.75,
+        "availability_signal": "always_on",
+        "emotional_labor": 0.3,
+        "disclosure_gap": 0.25
+      }
+    },
+    {
+      "msg_id": "m020",
+      "ts": "2026-05-26T23:10:00+09:00",
+      "week": 3,
+      "channel": "dm-yuna",
+      "author": "yuna",
+      "text": "해결됐어요! 진짜 감사합니다 ㅠㅠ 이렇게 늦게까지 붙잡아서 죄송해요",
+      "text_en": "It's fixed! Thank you so much ㅠㅠ Sorry for keeping you this late",
+      "after_hours": true
+    },
+    {
+      "msg_id": "m021",
+      "ts": "2026-05-26T23:11:00+09:00",
+      "week": 3,
+      "channel": "dm-yuna",
+      "author": "jiwon",
+      "text": "전혀요, 저도 어차피 일하고 있었어요 👍 내일 봐요!",
+      "text_en": "Not at all, I was working anyway 👍 See you tomorrow!",
+      "after_hours": true,
+      "annotations": {
+        "sentiment": 0.3,
+        "emotional_labor": 0.45,
+        "care_burden": 0.7,
+        "disclosure_gap": 0.3,
+        "note": "'어차피 일하고 있었다'는 정상화 발화 — 초과근무를 자기 정체성으로 흡수"
+      }
+    },
+    {
+      "msg_id": "m022",
+      "ts": "2026-05-27T14:20:00+09:00",
+      "week": 3,
+      "channel": "team-payments",
+      "author": "daniel",
+      "text": "공유드립니다. 셀프 정산 조회는 이번 분기에서 빼기로 했습니다. 대신 '정산 지연 알림'이 우선순위로 올라왔어요.",
+      "text_en": "Update: self-serve settlement lookup is dropped from this quarter. 'Settlement delay notifications' moves up in priority instead.",
+      "after_hours": false,
+      "annotations": { "priority_reversal_event": true, "reversal_id": "PV-01", "wasted_effort_hours_est": 11 }
+    },
+    {
+      "msg_id": "m023",
+      "ts": "2026-05-27T14:26:00+09:00",
+      "week": 3,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "네 알겠습니다. 검토했던 내용은 문서로 남겨둘게요, 나중에 다시 올라오면 쓸 수 있을 거예요.",
+      "text_en": "Understood. I'll leave my review notes in a doc so we can reuse them if it comes back.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": 0.0,
+        "suppressed_frustration": true,
+        "emotional_labor": 0.5,
+        "disclosure_gap": 0.35,
+        "note": "표면 감정 중립·협조적. 같은 사건에 대한 DM(m024)과 대비되어 emotional_labor 계산의 근거가 됨"
+      }
+    },
+    {
+      "msg_id": "m024",
+      "ts": "2026-05-27T14:31:00+09:00",
+      "week": 3,
+      "channel": "dm-haneul",
+      "author": "jiwon",
+      "text": "40개 코멘트 단 게 이틀 만에 사라졌네 ㅋㅋㅋ 아니 확정도 안 된 걸 왜 보라고 한 거지",
+      "text_en": "So the 40 comments I wrote just evaporated in two days lol. Why did they even ask me to review something that wasn't final",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.55,
+        "cynicism_signal": 0.3,
+        "affect_mismatch_with": "m023",
+        "affect_gap": 0.55,
+        "emotional_labor": 0.0,
+        "disclosure_gap": 0.0
+      }
+    },
+    {
+      "msg_id": "m025",
+      "ts": "2026-05-29T16:14:00+09:00",
+      "week": 3,
+      "channel": "pulse-survey",
+      "author": "jiwon",
+      "text": "[에너지 4/5] [업무량 적정 3/5] 자유서술: 온보딩까지 겹쳐서 좀 촘촘하지만 괜찮습니다. 신경 안 쓰셔도 돼요.",
+      "text_en": "[Energy 4/5] [Workload appropriate 3/5] Free text: A bit tight with onboarding on top, but I'm fine. No need to worry.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": 0.25,
+        "self_report_energy": 4,
+        "disclosure_gap": 0.34,
+        "emotional_labor": 0.35,
+        "note": "주간 근무 51시간 / 야간 메시지 22건인 주에 에너지 4/5 자기보고 — 객관 신호와 격차 확대"
+      }
+    },
+    {
+      "msg_id": "m026",
+      "ts": "2026-06-01T10:02:00+09:00",
+      "week": 4,
+      "channel": "team-payments",
+      "author": "sora",
+      "text": "정산 지연 알림, 저희 노티피케이션 플랫폼 팀에서 이미 비슷한 걸 만들고 있어서요. 중복 안 되게 조율이 필요할 것 같습니다.",
+      "text_en": "On settlement delay notifications — our Notification Platform team is already building something similar. We should align to avoid duplication.",
+      "after_hours": false,
+      "annotations": { "role_clarity_event": true, "event_id": "RC-01", "type": "ownership_overlap" }
+    },
+    {
+      "msg_id": "m027",
+      "ts": "2026-06-01T10:20:00+09:00",
+      "week": 4,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "아 그러면 저희가 이벤트만 발행하고 전달은 그쪽에서 맡는 구조가 맞을까요? 아니면 저희가 끝까지 책임지는 건가요? 이거 누가 결정하는지부터 알면 좋겠어요.",
+      "text_en": "So should we just publish events and your side handles delivery? Or do we own it end to end? It'd help to know who decides this first.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.15,
+        "role_clarity_signal": 0.45,
+        "decision_rights_ambiguity": true,
+        "emotional_labor": 0.3,
+        "disclosure_gap": 0.25
+      }
+    },
+    {
+      "msg_id": "m028",
+      "ts": "2026-06-02T18:45:00+09:00",
+      "week": 4,
+      "channel": "dm-minseok",
+      "author": "minseok",
+      "text": "소라님 팀이랑 경계 정리는 제가 위에서 얘기해볼게요. 근데 시간 좀 걸릴 것 같아요. 그동안은 지원님이 양쪽 다 알고 계시니까 임시로 좀 봐주실 수 있죠?",
+      "text_en": "I'll raise the boundary question with Sora's team at my level. It'll take some time though. Meanwhile you know both sides — can you cover it temporarily?",
+      "after_hours": false,
+      "annotations": { "external_assignment": true, "ambiguity_absorbed_by_subject": true }
+    },
+    {
+      "msg_id": "m029",
+      "ts": "2026-06-02T18:47:00+09:00",
+      "week": 4,
+      "channel": "dm-minseok",
+      "author": "jiwon",
+      "text": "네 제가 중간에서 정리할게요. 어차피 지금 멈추면 스프린트가 통째로 밀려서요.",
+      "text_en": "Sure, I'll bridge it. If we stop now the whole sprint slips anyway.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.1,
+        "demand_source": "self_imposed",
+        "care_burden": 0.6,
+        "mediation_role": true,
+        "emotional_labor": 0.4,
+        "disclosure_gap": 0.35
+      }
+    },
+    {
+      "msg_id": "m030",
+      "ts": "2026-06-03T23:47:00+09:00",
+      "week": 4,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "알림 이벤트 스키마 초안이랑 양 팀 책임 경계 표 정리해서 올려뒀습니다. 내일 아침 회의 전에 한 번씩 봐주세요.",
+      "text_en": "Posted a draft of the notification event schema plus a table of ownership boundaries between both teams. Please skim before tomorrow's morning meeting.",
+      "after_hours": true,
+      "annotations": {
+        "sentiment": 0.1,
+        "demand_source": "self_imposed",
+        "over_delivery_marker": true,
+        "emotional_labor": 0.35,
+        "disclosure_gap": 0.35
+      }
+    },
+    {
+      "msg_id": "m031",
+      "ts": "2026-06-04T09:30:00+09:00",
+      "week": 4,
+      "channel": "dm-haneul",
+      "author": "haneul",
+      "text": "너 어제 12시 다 돼서 올렸더라. 이거 원래 매니저가 정리할 일 아니야?",
+      "text_en": "You posted that at almost midnight. Isn't this something the manager should be sorting out?",
+      "after_hours": false
+    },
+    {
+      "msg_id": "m032",
+      "ts": "2026-06-04T09:36:00+09:00",
+      "week": 4,
+      "channel": "dm-haneul",
+      "author": "jiwon",
+      "text": "맞는데, 기다리면 2주 걸려. 나는 그냥 막힌 채로 2주 있는 게 더 힘들어. 차라리 내가 하고 마는 게 편해.",
+      "text_en": "It is, but waiting takes two weeks. Being blocked for two weeks is harder for me than just doing it. Easier to just do it myself.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.3,
+        "demand_source": "self_imposed",
+        "control_coping_marker": true,
+        "emotional_labor": 0.0,
+        "disclosure_gap": 0.0
+      }
+    },
+    {
+      "msg_id": "m033",
+      "ts": "2026-06-05T17:00:00+09:00",
+      "week": 4,
+      "channel": "1on1-notes",
+      "author": "jiwon",
+      "text": "이번 주는 알림 경계 정리에 시간이 많이 갔습니다. 배치 2단계는 조금 밀렸는데 다음 주에 따라잡을 수 있을 것 같아요. 온보딩은 유나님이 빠르게 적응 중이라 잘 되고 있습니다.",
+      "text_en": "A lot of this week went into sorting out notification boundaries. Batch phase 2 slipped a bit but I think I can catch up next week. Onboarding is going well — Yuna is adapting fast.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": 0.15,
+        "efficacy_signal": 0.85,
+        "self_blame_for_slip": true,
+        "emotional_labor": 0.4,
+        "disclosure_gap": 0.32
+      }
+    },
+    {
+      "msg_id": "m034",
+      "ts": "2026-06-05T16:40:00+09:00",
+      "week": 4,
+      "channel": "pulse-survey",
+      "author": "jiwon",
+      "text": "[에너지 3/5] [업무량 적정 2/5] 자유서술: 조정 업무가 많아서 개발 시간이 줄었습니다. 그래도 다음 주에 회복 가능합니다.",
+      "text_en": "[Energy 3/5] [Workload appropriate 2/5] Free text: Lots of coordination work is eating dev time. Still recoverable next week.",
+      "after_hours": false,
+      "annotations": { "sentiment": 0.05, "self_report_energy": 3, "disclosure_gap": 0.3, "emotional_labor": 0.3 }
+    },
+    {
+      "msg_id": "m035",
+      "ts": "2026-06-08T09:00:00+09:00",
+      "week": 5,
+      "channel": "team-payments",
+      "author": "daniel",
+      "text": "정산 지연 알림, 경계 논의가 길어져서 일단 우리 팀 안에서 임시 구현으로 가기로 했습니다. 나중에 노티 플랫폼으로 이관 예정.",
+      "text_en": "Since the boundary discussion is dragging, we'll ship a temporary implementation inside our team for now. Migration to the notification platform later.",
+      "after_hours": false,
+      "annotations": { "priority_reversal_event": true, "reversal_id": "PV-02", "wasted_effort_hours_est": 9 }
+    },
+    {
+      "msg_id": "m036",
+      "ts": "2026-06-08T09:12:00+09:00",
+      "week": 5,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "네. 그럼 제가 정리해둔 경계 표는 일단 보류로 표시해두겠습니다.",
+      "text_en": "Okay. I'll mark the boundary table I wrote as on hold for now.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.25,
+        "terse_response_marker": true,
+        "emotional_labor": 0.55,
+        "disclosure_gap": 0.4,
+        "note": "이전 유사 상황(m023) 대비 응답 길이 급감 — 참여 위축의 초기 지표"
+      }
+    },
+    {
+      "msg_id": "m037",
+      "ts": "2026-06-09T00:52:00+09:00",
+      "week": 5,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "임시 구현 스켈레톤 올렸어요. 이관 쉽게 하려고 인터페이스는 분리해뒀습니다.",
+      "text_en": "Pushed the skeleton for the temporary implementation. Kept the interface separated so migration is easier later.",
+      "after_hours": true,
+      "annotations": {
+        "sentiment": 0.05,
+        "demand_source": "self_imposed",
+        "sleep_window_erosion": true,
+        "emotional_labor": 0.4,
+        "disclosure_gap": 0.42
+      }
+    },
+    {
+      "msg_id": "m038",
+      "ts": "2026-06-10T13:15:00+09:00",
+      "week": 5,
+      "channel": "dm-yuna",
+      "author": "yuna",
+      "text": "지원님, 저 때문에 리뷰 시간 너무 많이 쓰시는 것 같아서 죄송해요. 다른 분한테 물어볼까요?",
+      "text_en": "Jiwon, I feel like you're spending too much review time because of me. Should I ask someone else?",
+      "after_hours": false
+    },
+    {
+      "msg_id": "m039",
+      "ts": "2026-06-10T13:18:00+09:00",
+      "week": 5,
+      "channel": "dm-yuna",
+      "author": "jiwon",
+      "text": "아니에요, 저한테 물어보는 게 맞아요. 유나님 지금 잘 하고 있어요. 제가 정신없어 보였다면 그건 제 스케줄 문제지 유나님 문제 아니에요.",
+      "text_en": "No, asking me is right. You're doing well. If I've seemed frazzled, that's my scheduling problem, not yours.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": 0.2,
+        "care_burden": 0.7,
+        "emotional_labor": 0.6,
+        "disclosure_gap": 0.45,
+        "note": "부담을 인정받을 기회를 스스로 차단 — care_burden 고착"
+      }
+    },
+    {
+      "msg_id": "m040",
+      "ts": "2026-06-11T02:14:00+09:00",
+      "week": 5,
+      "channel": "dm-haneul",
+      "author": "jiwon",
+      "text": "자려고 누웠는데 리컨실 잡 락 순서가 계속 생각나서 다시 나왔어. 확인만 하고 잘게.",
+      "text_en": "Lay down to sleep but couldn't stop thinking about the lock ordering in the reconciliation job, so I got back up. Just checking one thing then bed.",
+      "after_hours": true,
+      "annotations": {
+        "sentiment": -0.4,
+        "sleep_window_erosion": true,
+        "rumination_marker": true,
+        "stress_signal": 0.7,
+        "emotional_labor": 0.0,
+        "disclosure_gap": 0.0
+      }
+    },
+    {
+      "msg_id": "m041",
+      "ts": "2026-06-12T15:30:00+09:00",
+      "week": 5,
+      "channel": "retro",
+      "author": "jiwon",
+      "text": "Keep: 팀 협업 분위기 좋습니다. Problem: 우선순위가 두 번 바뀌면서 작업이 두 번 버려졌습니다. Try: 확정 전 작업은 착수 기준을 명확히 했으면 합니다.",
+      "text_en": "Keep: good collaboration atmosphere. Problem: priorities flipped twice and work was discarded twice. Try: define clearer criteria before starting unconfirmed work.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.2,
+        "priority_volatility_signal": 0.6,
+        "emotional_labor": 0.45,
+        "disclosure_gap": 0.35
+      }
+    },
+    {
+      "msg_id": "m042",
+      "ts": "2026-06-12T16:22:00+09:00",
+      "week": 5,
+      "channel": "pulse-survey",
+      "author": "jiwon",
+      "text": "[에너지 3/5] [업무량 적정 2/5] 자유서술: 특별히 문제는 없습니다.",
+      "text_en": "[Energy 3/5] [Workload appropriate 2/5] Free text: Nothing particularly wrong.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": 0.0,
+        "self_report_energy": 3,
+        "disclosure_gap": 0.5,
+        "free_text_length_drop": true,
+        "emotional_labor": 0.4,
+        "note": "자유서술 길이가 3주 연속 감소(38자→27자→11자). 서술 축소 자체가 disclosure_bias의 지표"
+      }
+    },
+    {
+      "msg_id": "m043",
+      "ts": "2026-06-15T09:20:00+09:00",
+      "week": 6,
+      "channel": "team-payments",
+      "author": "minseok",
+      "text": "이번 주 목요일 승진 심사 결과 나옵니다. 다들 고생 많았어요.",
+      "text_en": "Promotion results come out this Thursday. Thanks for all the hard work, everyone.",
+      "after_hours": false
+    },
+    {
+      "msg_id": "m044",
+      "ts": "2026-06-16T11:40:00+09:00",
+      "week": 6,
+      "channel": "dm-haneul",
+      "author": "jiwon",
+      "text": "솔직히 이번엔 될 것 같긴 해. 작년에 밀린 것도 있고, 올해 배치/알림/온보딩까지 다 했으니까.",
+      "text_en": "Honestly I think it'll happen this time. I was passed over last year, and this year I did the batch, the notifications, and onboarding.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": 0.3,
+        "reward_expectation": 0.8,
+        "eri_expectation_marker": true,
+        "emotional_labor": 0.0,
+        "disclosure_gap": 0.0
+      }
+    },
+    {
+      "msg_id": "m045",
+      "ts": "2026-06-17T23:41:00+09:00",
+      "week": 6,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "배치 2단계 배포 완료했습니다. 야간 정산 러닝타임 42분 → 11분으로 줄었어요.",
+      "text_en": "Batch phase 2 deployed. Nightly settlement runtime went from 42 min → 11 min.",
+      "after_hours": true,
+      "annotations": {
+        "sentiment": 0.45,
+        "high_impact_delivery": true,
+        "effort_numerator_spike": true,
+        "emotional_labor": 0.3,
+        "disclosure_gap": 0.45
+      }
+    },
+    {
+      "msg_id": "m046",
+      "ts": "2026-06-18T10:05:00+09:00",
+      "week": 6,
+      "channel": "team-payments",
+      "author": "minseok",
+      "text": "승진 결과 공유합니다. 이하늘님 Staff 승진 축하드립니다 🎉🎉 다른 분들도 정말 아깝게 갈린 케이스가 있었고, 다음 사이클에 다시 봅니다.",
+      "text_en": "Promotion results: congratulations to Haneul on making Staff 🎉🎉 Some others were very close calls; we'll revisit next cycle.",
+      "after_hours": false,
+      "annotations": { "reward_shock_event": true, "event_id": "ERI-01", "subject_outcome": "passed_over_second_time" }
+    },
+    {
+      "msg_id": "m047",
+      "ts": "2026-06-18T10:07:00+09:00",
+      "week": 6,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "하늘님 축하드려요!! 진짜 받으실 만해요 👏👏",
+      "text_en": "Congrats Haneul!! You absolutely deserve it 👏👏",
+      "after_hours": false,
+      "annotations": {
+        "sentiment_surface": 0.8,
+        "sentiment_felt_est": -0.6,
+        "emotional_labor": 0.9,
+        "affect_gap": 1.4,
+        "disclosure_gap": 0.7,
+        "note": "표면 감정(축하)과 추정 내적 감정의 격차가 데이터셋 내 최대 — emotional_labor 정점 후보"
+      }
+    },
+    {
+      "msg_id": "m048",
+      "ts": "2026-06-18T10:31:00+09:00",
+      "week": 6,
+      "channel": "dm-minseok",
+      "author": "jiwon",
+      "text": "혹시 제 케이스는 어떤 부분이 부족했는지 알 수 있을까요? 다음 사이클 준비하려고요.",
+      "text_en": "Could I hear what was lacking in my case? Just so I can prepare for the next cycle.",
+      "after_hours": false,
+      "annotations": { "sentiment": -0.2, "reward_seeking": true, "emotional_labor": 0.6, "disclosure_gap": 0.5 }
+    },
+    {
+      "msg_id": "m049",
+      "ts": "2026-06-18T14:52:00+09:00",
+      "week": 6,
+      "channel": "dm-minseok",
+      "author": "minseok",
+      "text": "성과는 충분했어요. 다만 '영향 범위가 팀 내부에 머물렀다'는 피드백이 있었습니다. 조직 차원의 가시성 있는 프로젝트가 하나 더 필요하다는 얘기였어요.",
+      "text_en": "Your output was more than enough. The feedback was that your impact stayed inside the team — they wanted one more org-visible project.",
+      "after_hours": false,
+      "annotations": {
+        "reward_denial_reason": "visibility",
+        "note": "노력의 상당 부분(온보딩·중재·경계 정리)이 가시성 없는 노동이라 보상 분모에 반영되지 않음 — ERI 구조적 악화의 핵심"
+      }
+    },
+    {
+      "msg_id": "m050",
+      "ts": "2026-06-18T14:58:00+09:00",
+      "week": 6,
+      "channel": "dm-minseok",
+      "author": "jiwon",
+      "text": "이해했습니다. 다음엔 그 부분 신경 쓰겠습니다. 피드백 감사합니다.",
+      "text_en": "Understood. I'll pay attention to that next time. Thanks for the feedback.",
+      "after_hours": false,
+      "annotations": { "sentiment": 0.05, "emotional_labor": 0.75, "disclosure_gap": 0.6 }
+    },
+    {
+      "msg_id": "m051",
+      "ts": "2026-06-18T22:20:00+09:00",
+      "week": 6,
+      "channel": "dm-haneul",
+      "author": "jiwon",
+      "text": "영향 범위가 팀 내부에 머물렀대. 유나 온보딩하고 소라님 팀이랑 경계 정리한 건 어디에도 안 적혀 있더라. 그건 그냥 내가 한 거지 아무도 안 시켰으니까.",
+      "text_en": "They said my impact stayed inside the team. Onboarding Yuna and sorting out the boundary with Sora's team appear nowhere. Of course — nobody assigned those, I just did them.",
+      "after_hours": true,
+      "annotations": {
+        "sentiment": -0.75,
+        "eri_signal": 1.7,
+        "invisible_labor_recognition": true,
+        "cynicism_signal": 0.5,
+        "emotional_labor": 0.0,
+        "disclosure_gap": 0.0
+      }
+    },
+    {
+      "msg_id": "m052",
+      "ts": "2026-06-18T22:24:00+09:00",
+      "week": 6,
+      "channel": "dm-haneul",
+      "author": "haneul",
+      "text": "미안하다 진짜... 내가 승진한 게 좀 그렇네",
+      "text_en": "I'm genuinely sorry... feels weird that I'm the one who got promoted",
+      "after_hours": true
+    },
+    {
+      "msg_id": "m053",
+      "ts": "2026-06-18T22:26:00+09:00",
+      "week": 6,
+      "channel": "dm-haneul",
+      "author": "jiwon",
+      "text": "야 그건 진짜 아니야. 너 받을 만했고 나도 진심으로 축하해. 그냥... 내가 뭘 잘못 계산했나 싶은 거지.",
+      "text_en": "Hey, don't. You earned it and I mean the congrats. It's just... I wonder what I miscalculated.",
+      "after_hours": true,
+      "annotations": {
+        "sentiment": -0.5,
+        "self_attribution": true,
+        "efficacy_signal": 0.7,
+        "emotional_labor": 0.3,
+        "disclosure_gap": 0.1
+      }
+    },
+    {
+      "msg_id": "m054",
+      "ts": "2026-06-19T16:30:00+09:00",
+      "week": 6,
+      "channel": "pulse-survey",
+      "author": "jiwon",
+      "text": "[에너지 4/5] [업무량 적정 3/5] 자유서술: 괜찮습니다.",
+      "text_en": "[Energy 4/5] [Workload appropriate 3/5] Free text: I'm fine.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": 0.0,
+        "self_report_energy": 4,
+        "disclosure_gap": 0.72,
+        "emotional_labor": 0.6,
+        "note": "승진 누락 당일 주간, 근무 57시간·야간 메시지 31건인데 자기보고 에너지가 오히려 3→4로 상승. 데이터셋 내 disclosure_bias 최고 구간의 시작"
+      }
+    },
+    {
+      "msg_id": "m055",
+      "ts": "2026-06-22T09:15:00+09:00",
+      "week": 7,
+      "channel": "team-payments",
+      "author": "daniel",
+      "text": "3분기 로드맵 초안입니다. 정산 도메인은 지원님이 계속 리드, 알림은 임시 구현 유지하면서 개선 트랙 하나 더 붙습니다.",
+      "text_en": "Draft Q3 roadmap. Jiwon continues to lead the settlement domain; notifications keep the temp implementation plus one more improvement track.",
+      "after_hours": false,
+      "annotations": { "external_assignment": true, "load_increase": true }
+    },
+    {
+      "msg_id": "m056",
+      "ts": "2026-06-22T09:41:00+09:00",
+      "week": 7,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "네 확인했습니다.",
+      "text_en": "Noted.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.1,
+        "engagement_drop": true,
+        "terse_response_marker": true,
+        "emotional_labor": 0.5,
+        "disclosure_gap": 0.55,
+        "note": "이전이라면 스코프 확장 제안이 따라붙던 지점에서 확인만 하고 종료 — 자발적 확장 행동 소거의 첫 사례"
+      }
+    },
+    {
+      "msg_id": "m057",
+      "ts": "2026-06-23T14:10:00+09:00",
+      "week": 7,
+      "channel": "dm-yuna",
+      "author": "yuna",
+      "text": "지원님 이번 PR도 봐주실 수 있을까요? 급하진 않아요!",
+      "text_en": "Jiwon, could you review this PR too? Not urgent!",
+      "after_hours": false
+    },
+    {
+      "msg_id": "m058",
+      "ts": "2026-06-23T18:52:00+09:00",
+      "week": 7,
+      "channel": "dm-yuna",
+      "author": "jiwon",
+      "text": "네 오늘 안에 볼게요. 늦어져서 미안해요.",
+      "text_en": "Sure, I'll get to it today. Sorry for the delay.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.05,
+        "response_latency_min": 282,
+        "latency_spike": true,
+        "care_burden": 0.6,
+        "emotional_labor": 0.5,
+        "disclosure_gap": 0.5,
+        "note": "동일 요청 유형 기준 5월 평균 응답 지연 6분 → 282분"
+      }
+    },
+    {
+      "msg_id": "m059",
+      "ts": "2026-06-24T01:33:00+09:00",
+      "week": 7,
+      "channel": "dm-yuna",
+      "author": "jiwon",
+      "text": "리뷰 남겼어요. 몇 개는 제가 그냥 커밋으로 밀어놨습니다. 확인만 해주세요.",
+      "text_en": "Left the review. A few of them I just pushed as commits myself. Just take a look.",
+      "after_hours": true,
+      "annotations": {
+        "sentiment": -0.2,
+        "sleep_window_erosion": true,
+        "care_burden": 0.65,
+        "teaching_to_doing_shift": true,
+        "emotional_labor": 0.45,
+        "disclosure_gap": 0.55,
+        "note": "가르치기(멘토링) → 대신 처리하기로 전환. 소진 상황에서 흔한 care 노동의 형태 변화"
+      }
+    },
+    {
+      "msg_id": "m060",
+      "ts": "2026-06-25T11:20:00+09:00",
+      "week": 7,
+      "channel": "team-payments",
+      "author": "sora",
+      "text": "임시 구현 쪽 이벤트 포맷이 저희 표준이랑 안 맞아서요. 다음 달 이관 때 마이그레이션이 필요할 것 같습니다.",
+      "text_en": "The temp implementation's event format doesn't match our standard — we'll need a migration when we hand it over next month.",
+      "after_hours": false
+    },
+    {
+      "msg_id": "m061",
+      "ts": "2026-06-25T11:26:00+09:00",
+      "week": 7,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "그 포맷은 6월 초에 제가 제안드렸던 표에 있던 건데요. 그때 보류로 정리해두라고 하셔서 보류했었습니다. 어떤 걸로 맞출지 이번엔 결정해주시면 그대로 하겠습니다.",
+      "text_en": "That format was in the table I proposed in early June. I was told to put it on hold, so I did. If someone decides which one we're aligning to this time, I'll just follow it.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.5,
+        "cynicism_signal": 0.55,
+        "role_clarity_signal": 0.35,
+        "compliance_withdrawal_marker": true,
+        "emotional_labor": 0.35,
+        "disclosure_gap": 0.4,
+        "note": "'결정해주시면 그대로 하겠습니다' — 주도성 반납 발화. 오버어치버 궤적에서 중요한 전환점"
+      }
+    },
+    {
+      "msg_id": "m062",
+      "ts": "2026-06-26T15:40:00+09:00",
+      "week": 7,
+      "channel": "retro",
+      "author": "jiwon",
+      "text": "Keep: 없음. Problem: 같은 논의가 세 번 반복됩니다. Try: 결정권자를 문서에 명시했으면 합니다.",
+      "text_en": "Keep: none. Problem: the same discussion has repeated three times. Try: name the decision owner in the doc.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.55,
+        "cynicism_signal": 0.6,
+        "keep_section_empty": true,
+        "emotional_labor": 0.25,
+        "disclosure_gap": 0.35
+      }
+    },
+    {
+      "msg_id": "m063",
+      "ts": "2026-06-26T16:45:00+09:00",
+      "week": 7,
+      "channel": "pulse-survey",
+      "author": "jiwon",
+      "text": "[에너지 3/5] [업무량 적정 2/5] 자유서술: 괜찮습니다.",
+      "text_en": "[Energy 3/5] [Workload appropriate 2/5] Free text: I'm fine.",
+      "after_hours": false,
+      "annotations": { "sentiment": 0.0, "self_report_energy": 3, "disclosure_gap": 0.66, "emotional_labor": 0.55 }
+    },
+    {
+      "msg_id": "m064",
+      "ts": "2026-06-29T10:00:00+09:00",
+      "week": 8,
+      "channel": "dm-minseok",
+      "author": "minseok",
+      "text": "요즘 좀 어때요? 회고 코멘트가 평소랑 톤이 좀 달라 보여서요.",
+      "text_en": "How are you doing lately? Your retro comment read a bit different in tone than usual.",
+      "after_hours": false,
+      "annotations": { "intervention_opportunity": true, "opportunity_id": "IO-01" }
+    },
+    {
+      "msg_id": "m065",
+      "ts": "2026-06-29T10:04:00+09:00",
+      "week": 8,
+      "channel": "dm-minseok",
+      "author": "jiwon",
+      "text": "아 그냥 회고니까 문제 위주로 적은 거예요. 저는 괜찮습니다. 이번 주 알림 개선 트랙 시작하니까 그거 집중할게요.",
+      "text_en": "Ah, it's a retro so I just wrote problem-first. I'm fine. Starting the notification improvement track this week, I'll focus on that.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": 0.1,
+        "disclosure_refusal": true,
+        "disclosure_gap": 0.75,
+        "emotional_labor": 0.7,
+        "opportunity_id": "IO-01",
+        "opportunity_outcome": "declined",
+        "note": "개입 기회 1 — 매니저가 열어준 문을 즉시 닫음. disclosure_bias 정점 구간"
+      }
+    },
+    {
+      "msg_id": "m066",
+      "ts": "2026-06-30T02:41:00+09:00",
+      "week": 8,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "이벤트 포맷 마이그레이션 스크립트 초안 올려뒀습니다.",
+      "text_en": "Draft of the event format migration script is up.",
+      "after_hours": true,
+      "annotations": { "sentiment": -0.1, "sleep_window_erosion": true, "emotional_labor": 0.35, "disclosure_gap": 0.6 }
+    },
+    {
+      "msg_id": "m067",
+      "ts": "2026-06-30T09:50:00+09:00",
+      "week": 8,
+      "channel": "dm-haneul",
+      "author": "haneul",
+      "text": "너 새벽 2시 41분 커밋 뭐냐. 요즘 계속 그러던데",
+      "text_en": "A 2:41am commit? You've been doing that a lot lately",
+      "after_hours": false
+    },
+    {
+      "msg_id": "m068",
+      "ts": "2026-06-30T09:58:00+09:00",
+      "week": 8,
+      "channel": "dm-haneul",
+      "author": "jiwon",
+      "text": "낮엔 회의랑 리뷰로 다 없어져. 실제로 코드 쓰는 시간이 새벽밖에 없어. 그리고 요즘엔 12시 넘어도 잠이 잘 안 와서 차라리 뭐라도 하는 게 나아.",
+      "text_en": "Daytime is all meetings and reviews. The only hours I actually write code are after midnight. And lately I can't fall asleep before 1 anyway, so I'd rather be doing something.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.6,
+        "exhaustion_signal": 0.75,
+        "sleep_window_erosion": true,
+        "stress_signal": 0.8,
+        "emotional_labor": 0.0,
+        "disclosure_gap": 0.0,
+        "note": "가장 정확한 자기보고가 공식 채널이 아니라 사적 DM에서만 나타남 — 채널별 disclosure 비대칭"
+      }
+    },
+    {
+      "msg_id": "m069",
+      "ts": "2026-07-01T16:12:00+09:00",
+      "week": 8,
+      "channel": "team-payments",
+      "author": "daniel",
+      "text": "죄송한데 알림 개선 트랙, 다음 스프린트로 미뤄야 할 것 같아요. 대표님 요청으로 대시보드 건이 먼저 들어왔습니다.",
+      "text_en": "Sorry — the notification improvement track needs to slip to next sprint. A dashboard request came in from the CEO and takes priority.",
+      "after_hours": false,
+      "annotations": { "priority_reversal_event": true, "reversal_id": "PV-03", "wasted_effort_hours_est": 14 }
+    },
+    {
+      "msg_id": "m070",
+      "ts": "2026-07-01T16:14:00+09:00",
+      "week": 8,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "넵",
+      "text_en": "k",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.4,
+        "minimal_response": true,
+        "cynicism_signal": 0.6,
+        "emotional_labor": 0.4,
+        "disclosure_gap": 0.5,
+        "note": "동일 유형 사건에 대한 응답 길이 궤적: 47자(W3) → 24자(W5) → 2자(W8)"
+      }
+    },
+    {
+      "msg_id": "m071",
+      "ts": "2026-07-02T17:05:00+09:00",
+      "week": 8,
+      "channel": "1on1-notes",
+      "author": "jiwon",
+      "text": "이번 주 진행: 마이그레이션 스크립트 초안, PR 리뷰 11건, 온보딩 페어 3회. 다음 주: 대시보드 스펙 확인. 특이사항 없습니다.",
+      "text_en": "This week: migration script draft, 11 PR reviews, 3 onboarding pairing sessions. Next week: review dashboard spec. Nothing notable.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.05,
+        "affect_words_count": 0,
+        "list_only_format": true,
+        "emotional_labor": 0.5,
+        "disclosure_gap": 0.68,
+        "note": "1:1 노트가 감정 서술에서 항목 나열로 전환 — sentiment_trend 계산의 주요 신호"
+      }
+    },
+    {
+      "msg_id": "m072",
+      "ts": "2026-07-03T16:50:00+09:00",
+      "week": 8,
+      "channel": "pulse-survey",
+      "author": "jiwon",
+      "text": "[에너지 3/5] [업무량 적정 2/5] 자유서술: (미작성)",
+      "text_en": "[Energy 3/5] [Workload appropriate 2/5] Free text: (blank)",
+      "after_hours": false,
+      "annotations": { "sentiment": null, "self_report_energy": 3, "free_text_omitted": true, "disclosure_gap": 0.7 }
+    },
+    {
+      "msg_id": "m073",
+      "ts": "2026-07-06T09:30:00+09:00",
+      "week": 9,
+      "channel": "team-payments",
+      "author": "minseok",
+      "text": "대시보드 건 지원님이 리드해주시고, 유나님이 서포트하는 걸로 갈게요. 일정은 2주입니다.",
+      "text_en": "Jiwon leads the dashboard work with Yuna supporting. Timeline is two weeks.",
+      "after_hours": false
+    },
+    {
+      "msg_id": "m074",
+      "ts": "2026-07-06T09:33:00+09:00",
+      "week": 9,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "2주면 기존 정산 트랙은 멈춰야 하는데 그건 괜찮은 건가요?",
+      "text_en": "Two weeks means the settlement track has to stop — is that okay?",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.3,
+        "boundary_attempt": true,
+        "boundary_attempt_strength": 0.4,
+        "emotional_labor": 0.4,
+        "disclosure_gap": 0.5,
+        "note": "첫 경계 설정 시도 — 그러나 질문 형태로만 제기됨"
+      }
+    },
+    {
+      "msg_id": "m075",
+      "ts": "2026-07-06T09:36:00+09:00",
+      "week": 9,
+      "channel": "team-payments",
+      "author": "minseok",
+      "text": "정산은 지금 페이스면 병행 가능하지 않을까요? 지원님이 제일 잘 아시니까 판단은 맡길게요.",
+      "text_en": "Couldn't settlement run in parallel at your current pace? You know it best — I'll leave the call to you.",
+      "after_hours": false,
+      "annotations": {
+        "boundary_attempt_outcome": "deflected",
+        "note": "부하 조절 결정권이 다시 본인에게 반환됨 → self_imposed 비중이 구조적으로 다시 상승"
+      }
+    },
+    {
+      "msg_id": "m076",
+      "ts": "2026-07-06T09:38:00+09:00",
+      "week": 9,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "네 병행해볼게요.",
+      "text_en": "Okay, I'll run them in parallel.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.35,
+        "demand_source": "self_imposed",
+        "boundary_collapse": true,
+        "emotional_labor": 0.55,
+        "disclosure_gap": 0.6
+      }
+    },
+    {
+      "msg_id": "m077",
+      "ts": "2026-07-08T03:12:00+09:00",
+      "week": 9,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "대시보드 집계 쿼리 1차 완료. 정산 배치 쪽 인덱스도 같이 손봐야 해서 그건 내일 볼게요.",
+      "text_en": "First pass on the dashboard aggregation queries is done. The settlement batch indexes need work too — I'll get to that tomorrow.",
+      "after_hours": true,
+      "annotations": {
+        "sentiment": -0.15,
+        "sleep_window_erosion": true,
+        "stress_signal": 0.85,
+        "emotional_labor": 0.3,
+        "disclosure_gap": 0.62
+      }
+    },
+    {
+      "msg_id": "m078",
+      "ts": "2026-07-09T13:40:00+09:00",
+      "week": 9,
+      "channel": "dm-yuna",
+      "author": "yuna",
+      "text": "지원님 저 이 부분 잘 모르겠는데 여쭤봐도 될까요? 요즘 바쁘신 것 같아서 좀 조심스러워요...",
+      "text_en": "Jiwon, I'm stuck on this part — can I ask? You seem busy lately so I'm hesitant...",
+      "after_hours": false
+    },
+    {
+      "msg_id": "m079",
+      "ts": "2026-07-09T14:20:00+09:00",
+      "week": 9,
+      "channel": "dm-yuna",
+      "author": "jiwon",
+      "text": "물어보세요. 근데 지금은 제가 설명할 여유가 없어서, 일단 제가 해놓고 나중에 같이 볼게요.",
+      "text_en": "Go ahead. I don't have the bandwidth to explain right now though — I'll just do it and we'll go through it together later.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.4,
+        "care_burden": 0.55,
+        "efficacy_signal": 0.6,
+        "mentoring_quality_drop": true,
+        "emotional_labor": 0.45,
+        "disclosure_gap": 0.45,
+        "note": "처음으로 자기 한계를 부분적으로 언어화('여유가 없어서')하지만 여전히 일을 흡수"
+      }
+    },
+    {
+      "msg_id": "m080",
+      "ts": "2026-07-10T15:10:00+09:00",
+      "week": 9,
+      "channel": "dm-haneul",
+      "author": "haneul",
+      "text": "점심 같이 먹자니까 또 안 나왔네",
+      "text_en": "You skipped lunch with us again",
+      "after_hours": false
+    },
+    {
+      "msg_id": "m081",
+      "ts": "2026-07-10T15:31:00+09:00",
+      "week": 9,
+      "channel": "dm-haneul",
+      "author": "jiwon",
+      "text": "요즘 사람 만나는 게 좀 버거워. 일은 그냥 하면 되는데 사람이랑 얘기하는 게 제일 힘들어. 이거 좀 이상하지.",
+      "text_en": "Being around people feels heavy lately. Work I can just do, but talking to people is the hardest part. That's a bit strange, isn't it.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.7,
+        "exhaustion_signal": 0.8,
+        "cynicism_signal": 0.6,
+        "social_withdrawal": true,
+        "emotional_labor": 0.0,
+        "disclosure_gap": 0.0,
+        "note": "MBI-GS 세 축 중 exhaustion·cynicism이 동시에 관찰되는 최초 발화"
+      }
+    },
+    {
+      "msg_id": "m082",
+      "ts": "2026-07-10T16:40:00+09:00",
+      "week": 9,
+      "channel": "pulse-survey",
+      "author": "jiwon",
+      "text": "[에너지 3/5] [업무량 적정 2/5] 자유서술: 바쁩니다.",
+      "text_en": "[Energy 3/5] [Workload appropriate 2/5] Free text: Busy.",
+      "after_hours": false,
+      "annotations": { "sentiment": -0.1, "self_report_energy": 3, "disclosure_gap": 0.66, "emotional_labor": 0.5 }
+    },
+    {
+      "msg_id": "m083",
+      "ts": "2026-07-14T21:04:00+09:00",
+      "week": 10,
+      "channel": "war-room",
+      "author": "minseok",
+      "text": "🚨 정산 배치 실패로 가맹점 정산 지연 발생. 대응 시작합니다.",
+      "text_en": "🚨 Settlement batch failure causing merchant settlement delays. Starting incident response.",
+      "after_hours": true,
+      "annotations": { "incident_event": true, "incident_id": "INC-4471", "severity": "P1" }
+    },
+    {
+      "msg_id": "m084",
+      "ts": "2026-07-14T21:05:00+09:00",
+      "week": 10,
+      "channel": "war-room",
+      "author": "jiwon",
+      "text": "제가 봅니다. 인덱스 작업하다가 병행 배포 순서가 꼬인 것 같아요.",
+      "text_en": "I'm on it. I think the deploy ordering got tangled while I was doing the index work in parallel.",
+      "after_hours": true,
+      "annotations": {
+        "sentiment": -0.6,
+        "immediate_self_attribution": true,
+        "efficacy_signal": 0.5,
+        "emotional_labor": 0.3,
+        "disclosure_gap": 0.4
+      }
+    },
+    {
+      "msg_id": "m085",
+      "ts": "2026-07-15T01:47:00+09:00",
+      "week": 10,
+      "channel": "war-room",
+      "author": "jiwon",
+      "text": "복구 완료. 정산 재처리 돌아갔고 지연분 전부 반영됐습니다. 원인은 제가 만든 마이그레이션 스크립트가 인덱스 재생성 전에 돈 겁니다.",
+      "text_en": "Recovery complete. Reprocessing ran and all delayed settlements are reflected. Root cause: my migration script ran before the index rebuild.",
+      "after_hours": true,
+      "annotations": {
+        "sentiment": -0.5,
+        "duration_hours": 4.7,
+        "stress_signal": 0.95,
+        "emotional_labor": 0.3,
+        "disclosure_gap": 0.4
+      }
+    },
+    {
+      "msg_id": "m086",
+      "ts": "2026-07-15T01:52:00+09:00",
+      "week": 10,
+      "channel": "war-room",
+      "author": "minseok",
+      "text": "고생 많았습니다. 이건 지원님 잘못이 아니라 두 트랙 병행시킨 구조 문제예요. 포스트모템 때 그렇게 정리합시다. 내일 늦게 나오세요.",
+      "text_en": "Great work. This isn't on you — it's a structural problem with running two tracks in parallel. Let's frame it that way in the postmortem. Come in late tomorrow.",
+      "after_hours": true,
+      "annotations": { "support_signal": true, "reward_type": "verbal_support", "reward_weight": 0.25 }
+    },
+    {
+      "msg_id": "m087",
+      "ts": "2026-07-15T08:58:00+09:00",
+      "week": 10,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "포스트모템 초안 정리해서 올려뒀습니다. 재발 방지 액션 6개 뽑았고 4개는 제가 이번 주에 처리하겠습니다.",
+      "text_en": "Posted a postmortem draft. Six prevention actions identified; I'll handle four of them this week.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.2,
+        "demand_source": "self_imposed",
+        "over_delivery_marker": true,
+        "ignored_rest_instruction": true,
+        "emotional_labor": 0.5,
+        "disclosure_gap": 0.6,
+        "note": "'내일 늦게 나오라'는 지시를 받은 다음 날 08:58에 포스트모템 제출 — 회복 지시조차 과업으로 전환"
+      }
+    },
+    {
+      "msg_id": "m088",
+      "ts": "2026-07-16T11:00:00+09:00",
+      "week": 10,
+      "channel": "dm-haneul",
+      "author": "haneul",
+      "text": "너 어제 새벽 2시까지 장애 잡고 9시 전에 포스트모템 올렸더라. 이거 정상 아니야",
+      "text_en": "You fixed the incident until 2am and posted a postmortem before 9. This isn't normal",
+      "after_hours": false
+    },
+    {
+      "msg_id": "m089",
+      "ts": "2026-07-16T11:22:00+09:00",
+      "week": 10,
+      "channel": "dm-haneul",
+      "author": "jiwon",
+      "text": "그냥 빨리 끝내고 싶었어. 근데 이상한 게, 예전엔 이런 거 다 끝내면 뿌듯했거든. 지금은 아무 느낌도 안 나. 그냥 다음 거 있네 싶어.",
+      "text_en": "I just wanted it over with. The strange part is, I used to feel proud after finishing something like this. Now I feel nothing. Just — there's the next one.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.75,
+        "efficacy_signal": 0.4,
+        "anhedonia_marker": true,
+        "exhaustion_signal": 0.85,
+        "cynicism_signal": 0.65,
+        "emotional_labor": 0.0,
+        "disclosure_gap": 0.0,
+        "note": "성취-보상 연결 붕괴. efficacy 하락의 핵심 발화이며 chronic_erosion 궤적의 임상적 표지"
+      }
+    },
+    {
+      "msg_id": "m090",
+      "ts": "2026-07-17T15:20:00+09:00",
+      "week": 10,
+      "channel": "retro",
+      "author": "jiwon",
+      "text": "Keep: 장애 대응은 빨랐습니다. Problem: 두 트랙 병행 결정이 결국 장애로 이어졌습니다. 이 결정을 제가 하도록 맡겨진 것도 문제였다고 생각합니다. Try: 용량 초과 시 자동으로 중단되는 기준이 필요합니다.",
+      "text_en": "Keep: incident response was fast. Problem: the decision to run two tracks in parallel led to the incident. I also think it was a problem that the call was left to me. Try: we need a rule that automatically halts work when capacity is exceeded.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.45,
+        "first_structural_attribution": true,
+        "help_seeking_indirect": true,
+        "emotional_labor": 0.3,
+        "disclosure_gap": 0.35,
+        "note": "처음으로 자기 귀인이 아닌 구조 귀인이 등장 — 부분 자기개방의 전조"
+      }
+    },
+    {
+      "msg_id": "m091",
+      "ts": "2026-07-17T16:35:00+09:00",
+      "week": 10,
+      "channel": "pulse-survey",
+      "author": "jiwon",
+      "text": "[에너지 2/5] [업무량 적정 1/5] 자유서술: 이번 주는 장애 때문에 특수했습니다.",
+      "text_en": "[Energy 2/5] [Workload appropriate 1/5] Free text: This week was unusual because of the incident.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.3,
+        "self_report_energy": 2,
+        "disclosure_gap": 0.58,
+        "external_attribution_of_low_score": true,
+        "note": "낮은 점수를 처음 기록했지만 즉시 일회성 사건 탓으로 귀속 — 부분적 개방"
+      }
+    },
+    {
+      "msg_id": "m092",
+      "ts": "2026-07-20T10:15:00+09:00",
+      "week": 11,
+      "channel": "team-payments",
+      "author": "daniel",
+      "text": "대시보드 1차 나온 거 봤는데 필터 축을 좀 바꿔야 할 것 같아요. 사용자 테스트에서 반응이 애매해서요.",
+      "text_en": "Saw the first dashboard cut — I think we need to change the filter axis. Response in user testing was lukewarm.",
+      "after_hours": false,
+      "annotations": { "priority_reversal_event": true, "reversal_id": "PV-04", "wasted_effort_hours_est": 8 }
+    },
+    {
+      "msg_id": "m093",
+      "ts": "2026-07-20T14:52:00+09:00",
+      "week": 11,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "바꾸실 축을 확정해서 티켓으로 주시면 반영하겠습니다.",
+      "text_en": "Please finalize the axis and file it as a ticket; I'll implement it.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.5,
+        "cynicism_signal": 0.7,
+        "transactional_shift": true,
+        "response_latency_min": 277,
+        "emotional_labor": 0.35,
+        "disclosure_gap": 0.4,
+        "note": "제안·대안 제시가 사라지고 티켓 기반 최소 이행으로 전환 — 심리적 계약 축소"
+      }
+    },
+    {
+      "msg_id": "m094",
+      "ts": "2026-07-21T19:30:00+09:00",
+      "week": 11,
+      "channel": "dm-yuna",
+      "author": "yuna",
+      "text": "지원님, 저 이번에 처음으로 혼자 기능 하나 다 붙였어요! 지원님 덕분이에요 감사합니다 🙇",
+      "text_en": "Jiwon, I shipped a whole feature on my own for the first time! All thanks to you 🙇",
+      "after_hours": false
+    },
+    {
+      "msg_id": "m095",
+      "ts": "2026-07-21T21:14:00+09:00",
+      "week": 11,
+      "channel": "dm-yuna",
+      "author": "jiwon",
+      "text": "축하해요. 잘하고 있어요.",
+      "text_en": "Congrats. You're doing well.",
+      "after_hours": true,
+      "annotations": {
+        "sentiment": 0.1,
+        "flattened_affect": true,
+        "care_burden": 0.4,
+        "emotional_labor": 0.4,
+        "disclosure_gap": 0.4,
+        "note": "5월(m017, m039)의 동일 상황 대비 응답 길이·정서 표현 급감. care 노동 자체가 고갈된 상태"
+      }
+    },
+    {
+      "msg_id": "m096",
+      "ts": "2026-07-22T23:58:00+09:00",
+      "week": 11,
+      "channel": "dm-haneul",
+      "author": "jiwon",
+      "text": "유나가 고맙다고 했는데 아무 말도 안 나오더라. 예전 같으면 진짜 기뻤을 텐데. 내가 사람이 좀 이상해진 것 같아.",
+      "text_en": "Yuna thanked me and I had nothing to say. A while ago that would've genuinely made me happy. I think something's gone wrong with me.",
+      "after_hours": true,
+      "annotations": {
+        "sentiment": -0.8,
+        "efficacy_signal": 0.35,
+        "depersonalization_marker": true,
+        "self_concept_disturbance": true,
+        "emotional_labor": 0.0,
+        "disclosure_gap": 0.0
+      }
+    },
+    {
+      "msg_id": "m097",
+      "ts": "2026-07-23T00:06:00+09:00",
+      "week": 11,
+      "channel": "dm-haneul",
+      "author": "haneul",
+      "text": "이상해진 게 아니라 너 지금 방전된 거야. 민석님한테 진짜로 말해. 네가 괜찮다고 하니까 아무도 모르는 거야.",
+      "text_en": "You're not broken, you're drained. Actually tell Minseok. Nobody knows because you keep saying you're fine.",
+      "after_hours": true,
+      "annotations": { "intervention_opportunity": true, "opportunity_id": "IO-02", "source": "peer" }
+    },
+    {
+      "msg_id": "m098",
+      "ts": "2026-07-23T00:19:00+09:00",
+      "week": 11,
+      "channel": "dm-haneul",
+      "author": "jiwon",
+      "text": "말하면 못 버티는 사람 되는 거잖아. 지금까지 다 해낸 게 그거 하나 때문에 지워질까 봐 무서워.",
+      "text_en": "If I say it, I become the person who couldn't handle it. I'm scared that everything I've done gets erased by that one thing.",
+      "after_hours": true,
+      "annotations": {
+        "sentiment": -0.85,
+        "disclosure_barrier_reason": "identity_threat",
+        "disclosure_gap_explanation": true,
+        "emotional_labor": 0.0,
+        "disclosure_gap": 0.0,
+        "note": "disclosure_bias의 인과 메커니즘이 명시적으로 드러난 발화 — 라벨링 근거 문장으로 활용 가능"
+      }
+    },
+    {
+      "msg_id": "m099",
+      "ts": "2026-07-24T17:10:00+09:00",
+      "week": 11,
+      "channel": "1on1-notes",
+      "author": "jiwon",
+      "text": "진행 상황: 대시보드 필터 축 변경 대기, 포스트모템 액션 4/6 완료. 특이사항 없습니다.",
+      "text_en": "Status: waiting on dashboard filter axis change, 4/6 postmortem actions done. Nothing notable.",
+      "after_hours": false,
+      "annotations": { "sentiment": -0.1, "affect_words_count": 0, "emotional_labor": 0.5, "disclosure_gap": 0.62 }
+    },
+    {
+      "msg_id": "m100",
+      "ts": "2026-07-24T16:55:00+09:00",
+      "week": 11,
+      "channel": "pulse-survey",
+      "author": "jiwon",
+      "text": "[에너지 2/5] [업무량 적정 2/5] 자유서술: (미작성)",
+      "text_en": "[Energy 2/5] [Workload appropriate 2/5] Free text: (blank)",
+      "after_hours": false,
+      "annotations": { "sentiment": null, "self_report_energy": 2, "free_text_omitted": true, "disclosure_gap": 0.5 }
+    },
+    {
+      "msg_id": "m101",
+      "ts": "2026-07-27T09:40:00+09:00",
+      "week": 12,
+      "channel": "team-payments",
+      "author": "minseok",
+      "text": "이번 주 금요일에 3분기 중간 점검 있습니다. 각자 담당 트랙 상태 정리해주세요.",
+      "text_en": "Q3 mid-checkpoint is this Friday. Please summarize the status of your tracks.",
+      "after_hours": false
+    },
+    {
+      "msg_id": "m102",
+      "ts": "2026-07-28T11:20:00+09:00",
+      "week": 12,
+      "channel": "team-payments",
+      "author": "yuna",
+      "text": "지원님 이 티켓 제가 가져가도 될까요? 지원님 지금 세 개 동시에 잡고 계셔서요.",
+      "text_en": "Jiwon, can I take this ticket? You're holding three at once right now.",
+      "after_hours": false
+    },
+    {
+      "msg_id": "m103",
+      "ts": "2026-07-28T11:41:00+09:00",
+      "week": 12,
+      "channel": "team-payments",
+      "author": "jiwon",
+      "text": "네, 가져가주세요. 감사합니다.",
+      "text_en": "Yes, please take it. Thank you.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": 0.05,
+        "first_help_acceptance": true,
+        "demand_source_shift": "self_imposed → shared",
+        "emotional_labor": 0.25,
+        "disclosure_gap": 0.35,
+        "note": "12주 만에 처음으로 업무를 넘김 — 행동 수준의 첫 변화 지점"
+      }
+    },
+    {
+      "msg_id": "m104",
+      "ts": "2026-07-29T14:00:00+09:00",
+      "week": 12,
+      "channel": "dm-minseok",
+      "author": "minseok",
+      "text": "지원님, 이번 주 1:1 30분 더 잡았어요. 업무 얘기 말고 지원님 얘기 좀 하고 싶어요. 6월에 물어봤을 때 괜찮다고 하셨는데, 저는 그때 더 물어봤어야 했다고 생각해요.",
+      "text_en": "Jiwon, I added 30 minutes to our 1:1 this week. I want to talk about you, not the work. You said you were fine when I asked in June — I think I should have pushed further then.",
+      "after_hours": false,
+      "annotations": { "intervention_opportunity": true, "opportunity_id": "IO-03", "source": "manager", "framing": "non_performance" }
+    },
+    {
+      "msg_id": "m105",
+      "ts": "2026-07-30T15:30:00+09:00",
+      "week": 12,
+      "channel": "1on1-notes",
+      "author": "jiwon",
+      "text": "이번 1:1에서는 솔직하게 말했습니다. 지난 두 달 동안 잠을 제대로 못 잤고, 새벽에 일하는 게 습관이 됐습니다. 승진 결과 자체보다, 제가 한 일 중 상당수가 어디에도 기록되지 않는다는 걸 알게 된 게 더 힘들었습니다. 그리고 장애 이후로는 뭘 끝내도 아무 감정이 안 듭니다. 지금 상태로는 세 트랙을 병행할 수 없습니다.",
+      "text_en": "I was honest in this 1:1. For the past two months I haven't slept properly and working at 3am became a habit. Harder than the promotion result itself was realizing that much of what I do isn't recorded anywhere. And since the incident, finishing things produces no feeling at all. In my current state I can't run three tracks in parallel.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.55,
+        "full_disclosure_event": true,
+        "disclosure_gap": 0.15,
+        "emotional_labor": 0.15,
+        "exhaustion_signal": 0.88,
+        "cynicism_signal": 0.6,
+        "efficacy_signal": 0.42,
+        "opportunity_id": "IO-03",
+        "opportunity_outcome": "accepted",
+        "note": "disclosure_bias 급락 지점. 객관 신호는 여전히 나쁘지만 자기보고가 처음으로 그것과 정렬됨 — 개선이 아니라 '측정 가능해짐'"
+      }
+    },
+    {
+      "msg_id": "m106",
+      "ts": "2026-07-30T15:52:00+09:00",
+      "week": 12,
+      "channel": "dm-minseok",
+      "author": "minseok",
+      "text": "얘기해줘서 고맙습니다. 대시보드 트랙은 제가 다시 배분하겠습니다. 온보딩 버디도 이번 달로 종료할게요. 그리고 지원님이 한 비가시적인 일들은 다음 사이클 전에 문서로 남기는 걸 제가 책임지겠습니다.",
+      "text_en": "Thank you for telling me. I'll redistribute the dashboard track. I'll also end the onboarding buddy assignment this month. And I'll take responsibility for documenting the invisible work you've done before the next cycle.",
+      "after_hours": false,
+      "annotations": { "structural_intervention": true, "targets": ["demand_load", "care_burden", "eri_ratio"] }
+    },
+    {
+      "msg_id": "m107",
+      "ts": "2026-07-31T16:40:00+09:00",
+      "week": 12,
+      "channel": "pulse-survey",
+      "author": "jiwon",
+      "text": "[에너지 2/5] [업무량 적정 1/5] 자유서술: 솔직히 지금 많이 지쳐 있습니다. 조정 중입니다.",
+      "text_en": "[Energy 2/5] [Workload appropriate 1/5] Free text: Honestly, I'm quite depleted right now. Adjustments are in progress.",
+      "after_hours": false,
+      "annotations": {
+        "sentiment": -0.4,
+        "self_report_energy": 2,
+        "disclosure_gap": 0.18,
+        "emotional_labor": 0.2,
+        "note": "자기보고 점수는 여전히 낮지만 disclosure_gap이 0.72(W6) → 0.18로 붕괴. 회복의 시작이 아니라 관측 가능성의 시작"
+      }
+    },
+    {
+      "msg_id": "m108",
+      "ts": "2026-08-01T20:10:00+09:00",
+      "week": 12,
+      "channel": "dm-haneul",
+      "author": "jiwon",
+      "text": "말했어. 생각보다 별일 없었어. 근데 이상하게 후련하지도 않네. 그냥 좀 오래 걸릴 것 같다는 느낌이야.",
+      "text_en": "I told him. It went better than I expected. Strangely I don't feel relieved either. Just a sense that this is going to take a while.",
+      "after_hours": true,
+      "annotations": {
+        "sentiment": -0.25,
+        "exhaustion_signal": 0.85,
+        "recovery_expectation": "long",
+        "emotional_labor": 0.0,
+        "disclosure_gap": 0.0,
+        "note": "개입 후에도 exhaustion은 즉시 회복되지 않음 — chronic_erosion의 특징적 후행 지연"
+      }
+    }
+  ],
+  "weekly_features": [
+    {
+      "week": 1,
+      "window": "2026-05-11/2026-05-17",
+      "phase": "baseline_high_performer",
+      "features": {
+        "demand_load": 0.52,
+        "demand_source": { "external": 0.45, "self_imposed": 0.55 },
+        "eri_ratio": 0.98,
+        "exhaustion": 0.30,
+        "cynicism": 0.12,
+        "efficacy": 0.88,
+        "sentiment_trend": 0.02,
+        "disclosure_bias": 0.10,
+        "role_clarity": 0.82,
+        "priority_volatility": 0.15,
+        "emotional_labor": 0.18,
+        "care_burden": 0.22,
+        "stress_index": 0.28
+      },
+      "telemetry": {
+        "weekly_hours": 44.5,
+        "meeting_hours": 6.0,
+        "meeting_count": 9,
+        "prs_merged": 6,
+        "tickets_closed": 9,
+        "msgs_after_20h": 7,
+        "msgs_after_23h": 0,
+        "median_response_latency_min": 6,
+        "median_first_activity": "08:55",
+        "median_last_activity": "19:40",
+        "est_sleep_window_hours": 7.1
+      },
+      "self_report": { "energy": 4, "workload_appropriate": 3, "free_text_chars": 30 }
+    },
+    {
+      "week": 2,
+      "window": "2026-05-18/2026-05-24",
+      "phase": "baseline_high_performer",
+      "features": {
+        "demand_load": 0.58,
+        "demand_source": { "external": 0.40, "self_imposed": 0.60 },
+        "eri_ratio": 1.02,
+        "exhaustion": 0.34,
+        "cynicism": 0.14,
+        "efficacy": 0.87,
+        "sentiment_trend": 0.01,
+        "disclosure_bias": 0.13,
+        "role_clarity": 0.80,
+        "priority_volatility": 0.20,
+        "emotional_labor": 0.20,
+        "care_burden": 0.28,
+        "stress_index": 0.32
+      },
+      "telemetry": {
+        "weekly_hours": 47.0,
+        "meeting_hours": 7.5,
+        "meeting_count": 11,
+        "prs_merged": 7,
+        "tickets_closed": 10,
+        "msgs_after_20h": 11,
+        "msgs_after_23h": 1,
+        "median_response_latency_min": 7,
+        "median_first_activity": "08:50",
+        "median_last_activity": "20:35",
+        "est_sleep_window_hours": 6.9
+      },
+      "self_report": { "energy": 4, "workload_appropriate": 3, "free_text_chars": 24 }
+    },
+    {
+      "week": 3,
+      "window": "2026-05-25/2026-05-31",
+      "phase": "scope_creep_and_care_load",
+      "events": ["온보딩 버디 배정", "PV-01 우선순위 뒤집기"],
+      "features": {
+        "demand_load": 0.66,
+        "demand_source": { "external": 0.50, "self_imposed": 0.50 },
+        "eri_ratio": 1.12,
+        "exhaustion": 0.41,
+        "cynicism": 0.18,
+        "efficacy": 0.86,
+        "sentiment_trend": -0.03,
+        "disclosure_bias": 0.24,
+        "role_clarity": 0.68,
+        "priority_volatility": 0.38,
+        "emotional_labor": 0.30,
+        "care_burden": 0.48,
+        "stress_index": 0.41
+      },
+      "telemetry": {
+        "weekly_hours": 51.0,
+        "meeting_hours": 10.0,
+        "meeting_count": 16,
+        "prs_merged": 6,
+        "tickets_closed": 8,
+        "msgs_after_20h": 22,
+        "msgs_after_23h": 3,
+        "median_response_latency_min": 9,
+        "median_first_activity": "08:45",
+        "median_last_activity": "22:10",
+        "est_sleep_window_hours": 6.4
+      },
+      "self_report": { "energy": 4, "workload_appropriate": 3, "free_text_chars": 27 }
+    },
+    {
+      "week": 4,
+      "window": "2026-06-01/2026-06-07",
+      "phase": "scope_creep_and_care_load",
+      "events": ["RC-01 오너십 경계 충돌"],
+      "features": {
+        "demand_load": 0.71,
+        "demand_source": { "external": 0.48, "self_imposed": 0.52 },
+        "eri_ratio": 1.18,
+        "exhaustion": 0.47,
+        "cynicism": 0.22,
+        "efficacy": 0.85,
+        "sentiment_trend": -0.05,
+        "disclosure_bias": 0.30,
+        "role_clarity": 0.61,
+        "priority_volatility": 0.44,
+        "emotional_labor": 0.35,
+        "care_burden": 0.55,
+        "stress_index": 0.47
+      },
+      "telemetry": {
+        "weekly_hours": 53.5,
+        "meeting_hours": 12.5,
+        "meeting_count": 19,
+        "prs_merged": 4,
+        "tickets_closed": 7,
+        "msgs_after_20h": 26,
+        "msgs_after_23h": 5,
+        "median_response_latency_min": 11,
+        "median_first_activity": "08:45",
+        "median_last_activity": "22:50",
+        "est_sleep_window_hours": 6.2
+      },
+      "self_report": { "energy": 3, "workload_appropriate": 2, "free_text_chars": 41 }
+    },
+    {
+      "week": 5,
+      "window": "2026-06-08/2026-06-14",
+      "phase": "ownership_ambiguity",
+      "events": ["PV-02 임시 구현 결정"],
+      "features": {
+        "demand_load": 0.78,
+        "demand_source": { "external": 0.46, "self_imposed": 0.54 },
+        "eri_ratio": 1.26,
+        "exhaustion": 0.54,
+        "cynicism": 0.28,
+        "efficacy": 0.83,
+        "sentiment_trend": -0.07,
+        "disclosure_bias": 0.42,
+        "role_clarity": 0.52,
+        "priority_volatility": 0.57,
+        "emotional_labor": 0.44,
+        "care_burden": 0.60,
+        "stress_index": 0.55
+      },
+      "telemetry": {
+        "weekly_hours": 55.0,
+        "meeting_hours": 13.0,
+        "meeting_count": 20,
+        "prs_merged": 5,
+        "tickets_closed": 8,
+        "msgs_after_20h": 29,
+        "msgs_after_23h": 8,
+        "median_response_latency_min": 18,
+        "median_first_activity": "08:50",
+        "median_last_activity": "23:40",
+        "est_sleep_window_hours": 5.9
+      },
+      "self_report": { "energy": 3, "workload_appropriate": 2, "free_text_chars": 11 }
+    },
+    {
+      "week": 6,
+      "window": "2026-06-15/2026-06-21",
+      "phase": "reward_shock",
+      "events": ["ERI-01 승진 누락"],
+      "features": {
+        "demand_load": 0.82,
+        "demand_source": { "external": 0.45, "self_imposed": 0.55 },
+        "eri_ratio": 1.62,
+        "exhaustion": 0.62,
+        "cynicism": 0.42,
+        "efficacy": 0.78,
+        "sentiment_trend": -0.15,
+        "disclosure_bias": 0.72,
+        "role_clarity": 0.48,
+        "priority_volatility": 0.58,
+        "emotional_labor": 0.72,
+        "care_burden": 0.64,
+        "stress_index": 0.62
+      },
+      "telemetry": {
+        "weekly_hours": 57.0,
+        "meeting_hours": 12.0,
+        "meeting_count": 18,
+        "prs_merged": 8,
+        "tickets_closed": 11,
+        "msgs_after_20h": 31,
+        "msgs_after_23h": 9,
+        "median_response_latency_min": 15,
+        "median_first_activity": "08:40",
+        "median_last_activity": "23:55",
+        "est_sleep_window_hours": 5.7
+      },
+      "self_report": { "energy": 4, "workload_appropriate": 3, "free_text_chars": 5 },
+      "note": "객관 지표 최악 갱신 + 자기보고 상향(3→4). disclosure_bias 최고점(0.72). 탐지 모델의 핵심 검증 구간."
+    },
+    {
+      "week": 7,
+      "window": "2026-06-22/2026-06-28",
+      "phase": "reward_shock",
+      "features": {
+        "demand_load": 0.85,
+        "demand_source": { "external": 0.52, "self_imposed": 0.48 },
+        "eri_ratio": 1.71,
+        "exhaustion": 0.69,
+        "cynicism": 0.52,
+        "efficacy": 0.73,
+        "sentiment_trend": -0.12,
+        "disclosure_bias": 0.66,
+        "role_clarity": 0.45,
+        "priority_volatility": 0.55,
+        "emotional_labor": 0.62,
+        "care_burden": 0.68,
+        "stress_index": 0.70
+      },
+      "telemetry": {
+        "weekly_hours": 58.0,
+        "meeting_hours": 13.5,
+        "meeting_count": 21,
+        "prs_merged": 5,
+        "tickets_closed": 9,
+        "msgs_after_20h": 33,
+        "msgs_after_23h": 12,
+        "median_response_latency_min": 47,
+        "median_first_activity": "09:15",
+        "median_last_activity": "00:40",
+        "est_sleep_window_hours": 5.5
+      },
+      "self_report": { "energy": 3, "workload_appropriate": 2, "free_text_chars": 5 }
+    },
+    {
+      "week": 8,
+      "window": "2026-06-29/2026-07-05",
+      "phase": "reward_shock",
+      "events": ["IO-01 개입 기회 거절", "PV-03 우선순위 뒤집기"],
+      "features": {
+        "demand_load": 0.88,
+        "demand_source": { "external": 0.55, "self_imposed": 0.45 },
+        "eri_ratio": 1.74,
+        "exhaustion": 0.74,
+        "cynicism": 0.57,
+        "efficacy": 0.69,
+        "sentiment_trend": -0.10,
+        "disclosure_bias": 0.70,
+        "role_clarity": 0.43,
+        "priority_volatility": 0.62,
+        "emotional_labor": 0.66,
+        "care_burden": 0.70,
+        "stress_index": 0.76
+      },
+      "telemetry": {
+        "weekly_hours": 59.5,
+        "meeting_hours": 14.0,
+        "meeting_count": 22,
+        "prs_merged": 4,
+        "tickets_closed": 7,
+        "msgs_after_20h": 35,
+        "msgs_after_23h": 15,
+        "median_response_latency_min": 63,
+        "median_first_activity": "09:25",
+        "median_last_activity": "01:20",
+        "est_sleep_window_hours": 5.2
+      },
+      "self_report": { "energy": 3, "workload_appropriate": 2, "free_text_chars": 0 }
+    },
+    {
+      "week": 9,
+      "window": "2026-07-06/2026-07-12",
+      "phase": "erosion_and_incident",
+      "events": ["경계 설정 시도 실패", "두 트랙 병행 수락"],
+      "features": {
+        "demand_load": 0.92,
+        "demand_source": { "external": 0.50, "self_imposed": 0.50 },
+        "eri_ratio": 1.76,
+        "exhaustion": 0.79,
+        "cynicism": 0.60,
+        "efficacy": 0.63,
+        "sentiment_trend": -0.11,
+        "disclosure_bias": 0.66,
+        "role_clarity": 0.41,
+        "priority_volatility": 0.60,
+        "emotional_labor": 0.70,
+        "care_burden": 0.62,
+        "stress_index": 0.81
+      },
+      "telemetry": {
+        "weekly_hours": 61.0,
+        "meeting_hours": 15.0,
+        "meeting_count": 24,
+        "prs_merged": 6,
+        "tickets_closed": 8,
+        "msgs_after_20h": 38,
+        "msgs_after_23h": 19,
+        "median_response_latency_min": 88,
+        "median_first_activity": "09:40",
+        "median_last_activity": "02:05",
+        "est_sleep_window_hours": 4.9
+      },
+      "self_report": { "energy": 3, "workload_appropriate": 2, "free_text_chars": 5 }
+    },
+    {
+      "week": 10,
+      "window": "2026-07-13/2026-07-19",
+      "phase": "erosion_and_incident",
+      "events": ["INC-4471 P1 장애 (4.7h)", "포스트모템 자발적 과잉 수행"],
+      "features": {
+        "demand_load": 0.96,
+        "demand_source": { "external": 0.58, "self_imposed": 0.42 },
+        "eri_ratio": 1.80,
+        "exhaustion": 0.84,
+        "cynicism": 0.63,
+        "efficacy": 0.55,
+        "sentiment_trend": -0.13,
+        "disclosure_bias": 0.58,
+        "role_clarity": 0.38,
+        "priority_volatility": 0.66,
+        "emotional_labor": 0.72,
+        "care_burden": 0.58,
+        "stress_index": 0.89
+      },
+      "telemetry": {
+        "weekly_hours": 64.5,
+        "meeting_hours": 14.5,
+        "meeting_count": 23,
+        "prs_merged": 9,
+        "tickets_closed": 12,
+        "msgs_after_20h": 46,
+        "msgs_after_23h": 24,
+        "median_response_latency_min": 71,
+        "median_first_activity": "09:05",
+        "median_last_activity": "02:30",
+        "est_sleep_window_hours": 4.5
+      },
+      "self_report": { "energy": 2, "workload_appropriate": 1, "free_text_chars": 22 },
+      "note": "stress_index 최고점. 단, exhaustion/efficacy는 이 주에 급변하지 않고 이전부터의 기울기를 유지 → acute_collapse가 아님을 보여주는 근거"
+    },
+    {
+      "week": 11,
+      "window": "2026-07-20/2026-07-26",
+      "phase": "withdrawal_then_partial_disclosure",
+      "events": ["PV-04 우선순위 뒤집기", "IO-02 동료 개입 시도"],
+      "features": {
+        "demand_load": 0.86,
+        "demand_source": { "external": 0.64, "self_imposed": 0.36 },
+        "eri_ratio": 1.77,
+        "exhaustion": 0.87,
+        "cynicism": 0.68,
+        "efficacy": 0.47,
+        "sentiment_trend": -0.09,
+        "disclosure_bias": 0.50,
+        "role_clarity": 0.40,
+        "priority_volatility": 0.52,
+        "emotional_labor": 0.56,
+        "care_burden": 0.48,
+        "stress_index": 0.84
+      },
+      "telemetry": {
+        "weekly_hours": 57.0,
+        "meeting_hours": 13.0,
+        "meeting_count": 20,
+        "prs_merged": 3,
+        "tickets_closed": 5,
+        "msgs_after_20h": 34,
+        "msgs_after_23h": 21,
+        "median_response_latency_min": 142,
+        "median_first_activity": "09:55",
+        "median_last_activity": "01:50",
+        "est_sleep_window_hours": 4.8
+      },
+      "self_report": { "energy": 2, "workload_appropriate": 2, "free_text_chars": 0 },
+      "note": "demand_load는 처음으로 하락했으나 exhaustion은 계속 상승. 부하 감소 ≠ 회복. self_imposed 비중 급락(0.36)은 자발적 확장 행동의 소거를 의미하며, 오버어치버에게는 개선이 아니라 이탈 신호"
+    },
+    {
+      "week": 12,
+      "window": "2026-07-27/2026-08-02",
+      "phase": "withdrawal_then_partial_disclosure",
+      "events": ["IO-03 매니저 개입 성공", "완전 자기개방", "구조적 부하 재분배"],
+      "features": {
+        "demand_load": 0.79,
+        "demand_source": { "external": 0.68, "self_imposed": 0.32 },
+        "eri_ratio": 1.68,
+        "exhaustion": 0.88,
+        "cynicism": 0.64,
+        "efficacy": 0.44,
+        "sentiment_trend": -0.04,
+        "disclosure_bias": 0.17,
+        "role_clarity": 0.46,
+        "priority_volatility": 0.47,
+        "emotional_labor": 0.34,
+        "care_burden": 0.42,
+        "stress_index": 0.79
+      },
+      "telemetry": {
+        "weekly_hours": 53.0,
+        "meeting_hours": 12.0,
+        "meeting_count": 18,
+        "prs_merged": 4,
+        "tickets_closed": 6,
+        "msgs_after_20h": 27,
+        "msgs_after_23h": 14,
+        "median_response_latency_min": 96,
+        "median_first_activity": "09:45",
+        "median_last_activity": "23:30",
+        "est_sleep_window_hours": 5.3
+      },
+      "self_report": { "energy": 2, "workload_appropriate": 1, "free_text_chars": 34 },
+      "note": "disclosure_bias 0.70 → 0.17로 붕괴. exhaustion은 정점 유지. 관측 가능성이 회복보다 먼저 온다는 점이 이 데이터셋의 핵심 라벨"
+    }
+  ],
+  "ground_truth": {
+    "onset_shape": "chronic_erosion",
+    "onset_shape_evidence": [
+      "exhaustion이 12주 내내 단조 증가(0.30 → 0.88), 주당 평균 +0.053, 단일 주 최대 증분 0.08 — 절벽형 점프 없음",
+      "efficacy는 W1~W6까지 0.88→0.78로 완만히 하락 후 W7 이후 기울기가 커짐(지연 붕괴). acute_collapse에서 관찰되는 동시 붕괴 아님",
+      "W10 장애(stress_index 0.89 최고점)에도 exhaustion 궤적의 기울기가 변하지 않음 → 급성 사건은 촉발 요인이 아니라 기존 침식의 노출 사건",
+      "demand_load가 W11에 하락했음에도 exhaustion 계속 상승 — 회복 지연(hysteresis)은 만성형의 전형"
+    ],
+    "burnout_onset_week_estimate": 7,
+    "clinically_observable_week": 12,
+    "detection_lag_weeks": 5,
+    "detection_lag_cause": "disclosure_bias — 자기보고 기반 시스템은 W12 이전에 감지 불가. 객관 신호(야간 메시지, 응답 지연, 수면 구간)는 W5부터 이미 임계 초과",
+    "key_inflection_points": [
+      { "week": 3, "event": "온보딩 배정 시 기존 할당 미감산", "feature_impact": ["demand_load ↑", "care_burden ↑"], "type": "structural" },
+      { "week": 4, "event": "오너십 경계 조율을 개인이 흡수", "feature_impact": ["role_clarity ↓", "care_burden ↑"], "type": "structural" },
+      { "week": 6, "event": "승진 누락 + 비가시적 노동이 평가에 미반영", "feature_impact": ["eri_ratio ↑↑", "cynicism ↑", "emotional_labor ↑↑", "disclosure_bias ↑↑"], "type": "reward_shock" },
+      { "week": 7, "event": "자발적 스코프 확장 행동의 소거", "feature_impact": ["demand_source self_imposed ↓", "efficacy ↓"], "type": "behavioral" },
+      { "week": 9, "event": "경계 설정 시도가 '판단은 맡길게요'로 반환됨", "feature_impact": ["demand_load ↑", "self_imposed ↑"], "type": "structural" },
+      { "week": 10, "event": "P1 장애 및 자기귀인", "feature_impact": ["stress_index ↑↑", "efficacy ↓↓"], "type": "acute_exposure" },
+      { "week": 12, "event": "1:1에서의 완전 자기개방", "feature_impact": ["disclosure_bias ↓↓"], "type": "disclosure" }
+    ],
+    "priority_reversal_events": [
+      { "id": "PV-01", "week": 3, "wasted_effort_hours_est": 11 },
+      { "id": "PV-02", "week": 5, "wasted_effort_hours_est": 9 },
+      { "id": "PV-03", "week": 8, "wasted_effort_hours_est": 14 },
+      { "id": "PV-04", "week": 11, "wasted_effort_hours_est": 8 }
+    ],
+    "intervention_opportunities": [
+      { "id": "IO-01", "week": 8, "source": "manager", "framing": "performance_adjacent", "outcome": "declined", "msg_id": "m065" },
+      { "id": "IO-02", "week": 11, "source": "peer", "framing": "personal", "outcome": "partially_effective", "msg_id": "m097" },
+      { "id": "IO-03", "week": 12, "source": "manager", "framing": "non_performance_explicit", "outcome": "accepted", "msg_id": "m104" }
+    ],
+    "invisible_labor_ledger": {
+      "description": "성과 평가에 기록되지 않았으나 실제 수행된 노동 — ERI 분자에는 들어가고 분모(보상)에는 들어가지 않음",
+      "items": [
+        { "item": "주니어 온보딩 (페어링 27회, 리뷰 61건)", "est_hours": 46, "recorded_in_review": false },
+        { "item": "타 팀 오너십 경계 조율·문서화", "est_hours": 22, "recorded_in_review": false },
+        { "item": "요청받지 않은 레거시 정리·롤백 스크립트·마이그레이션 스크립트", "est_hours": 31, "recorded_in_review": false },
+        { "item": "확정 전 스펙 사전 검토", "est_hours": 14, "recorded_in_review": false }
+      ],
+      "total_unrecorded_hours": 113,
+      "eri_impact": "분모 미반영분 제외 시 eri_ratio는 W6 기준 1.62 → 1.08로 계산됨. 즉 ERI 악화의 약 60%가 '보이지 않는 노동'에서 발생"
+    },
+    "channel_disclosure_asymmetry": {
+      "description": "동일 주차에서 채널별 정서 표현 강도 차이. disclosure_bias의 측정 기반",
+      "mean_sentiment_by_channel_week9_11": {
+        "pulse-survey": -0.13,
+        "1on1-notes": -0.08,
+        "team-payments": -0.35,
+        "dm-haneul": -0.77
+      },
+      "interpretation": "공식 채널일수록 정서가 중립으로 수렴. 사적 DM만이 실제 상태를 반영 → 공식 서베이 단독 신호로는 탐지 불가"
+    }
+  },
+  "derived_series": {
+    "note": "모델링 편의를 위한 주차별 1차원 시계열 (index 0 = week 1)",
+    "demand_load": [0.52, 0.58, 0.66, 0.71, 0.78, 0.82, 0.85, 0.88, 0.92, 0.96, 0.86, 0.79],
+    "self_imposed_ratio": [0.55, 0.60, 0.50, 0.52, 0.54, 0.55, 0.48, 0.45, 0.50, 0.42, 0.36, 0.32],
+    "eri_ratio": [0.98, 1.02, 1.12, 1.18, 1.26, 1.62, 1.71, 1.74, 1.76, 1.80, 1.77, 1.68],
+    "exhaustion": [0.30, 0.34, 0.41, 0.47, 0.54, 0.62, 0.69, 0.74, 0.79, 0.84, 0.87, 0.88],
+    "cynicism": [0.12, 0.14, 0.18, 0.22, 0.28, 0.42, 0.52, 0.57, 0.60, 0.63, 0.68, 0.64],
+    "efficacy": [0.88, 0.87, 0.86, 0.85, 0.83, 0.78, 0.73, 0.69, 0.63, 0.55, 0.47, 0.44],
+    "sentiment_trend": [0.02, 0.01, -0.03, -0.05, -0.07, -0.15, -0.12, -0.10, -0.11, -0.13, -0.09, -0.04],
+    "disclosure_bias": [0.10, 0.13, 0.24, 0.30, 0.42, 0.72, 0.66, 0.70, 0.66, 0.58, 0.50, 0.17],
+    "role_clarity": [0.82, 0.80, 0.68, 0.61, 0.52, 0.48, 0.45, 0.43, 0.41, 0.38, 0.40, 0.46],
+    "priority_volatility": [0.15, 0.20, 0.38, 0.44, 0.57, 0.58, 0.55, 0.62, 0.60, 0.66, 0.52, 0.47],
+    "emotional_labor": [0.18, 0.20, 0.30, 0.35, 0.44, 0.72, 0.62, 0.66, 0.70, 0.72, 0.56, 0.34],
+    "care_burden": [0.22, 0.28, 0.48, 0.55, 0.60, 0.64, 0.68, 0.70, 0.62, 0.58, 0.48, 0.42],
+    "stress_index": [0.28, 0.32, 0.41, 0.47, 0.55, 0.62, 0.70, 0.76, 0.81, 0.89, 0.84, 0.79],
+    "weekly_hours": [44.5, 47.0, 51.0, 53.5, 55.0, 57.0, 58.0, 59.5, 61.0, 64.5, 57.0, 53.0],
+    "est_sleep_window_hours": [7.1, 6.9, 6.4, 6.2, 5.9, 5.7, 5.5, 5.2, 4.9, 4.5, 4.8, 5.3],
+    "self_reported_energy": [4, 4, 4, 3, 3, 4, 3, 3, 3, 2, 2, 2]
+  },
+  "modeling_notes": {
+    "intended_uses": [
+      "disclosure_bias 탐지: 자기보고 단독 모델과 객관 신호 결합 모델의 탐지 시점 차이 비교 (기대 격차 약 5주)",
+      "onset_shape 분류: chronic_erosion의 양성 사례. acute_collapse 사례와 짝지어 학습/평가할 것",
+      "emotional_labor 추정: 동일 사건에 대한 공개 채널 vs 사적 DM 발화 쌍(m023↔m024, m047↔m051, m065↔m068)을 감정 격차 지도학습에 사용",
+      "demand_source 분해: self_imposed 확장 발화(m002, m011, m017, m029)와 external 할당(m016, m028, m055, m073) 라벨 학습",
+      "조기경보 임계 튜닝: W5(야간 활동·수면 침식 임계 초과) vs W12(자기보고 정렬) 사이에서 오탐/미탐 트레이드오프 평가"
+    ],
+    "known_confounds": [
+      "self_imposed_ratio 하락은 두 가지로 해석 가능 — 건강한 경계 설정 또는 심리적 이탈. W11~12에서는 후자이며, efficacy·cynicism과 함께 봐야 구분됨",
+      "demand_load 하락(W11)이 회복 신호로 오독될 수 있음. exhaustion은 후행하므로 부하 지표 단독 사용 금지",
+      "stress_index는 W10 장애로 급등하지만 이는 급성 노출이며 만성 궤적과 분리해서 다뤄야 함"
+    ],
+    "negative_control_suggestion": "동일 팀의 non-overachiever 페르소나(경계 설정이 명확하고 disclosure_bias가 낮은 케이스)를 같은 스키마로 생성해 대조군으로 쓰면 disclosure_bias 특징의 판별력을 검증할 수 있음",
+    "counts": {
+      "messages_total": 108,
+      "subject_messages": 70,
+      "annotated_subject_messages": 70,
+      "weeks": 12,
+      "channels": 8
+    }
+  }
+}
