@@ -1,0 +1,639 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-08-08T00:00:00+09:00",
+  "dataset": "burnout-persona-atlas/p1-overachiever/work-chat-sample",
+  "disclaimer": "Synthetic composite. Not a real person, not real message logs. For model development and demo use only.",
+  "persona": {
+    "id": "P1",
+    "name": "The Overachiever",
+    "thesis": "Voluntary overload caused by an internal standard rather than an external demand; reports being fine and means it, then collapses without warning.",
+    "onset_shape": "acute_collapse",
+    "detection_risk": "high",
+    "defining_features": [
+      "disclosure_bias",
+      "demand_source=self_imposed",
+      "exhaustion"
+    ],
+    "inverted_features": [
+      "cynicism",
+      "efficacy"
+    ],
+    "feature_percentiles": {
+      "disclosure_bias": 98,
+      "demand_source_self_imposed": 94,
+      "exhaustion": 91,
+      "demand_load": 96,
+      "efficacy": 88,
+      "stress_index": 84,
+      "self_reported_strain": 43,
+      "cynicism": 12,
+      "delegation_rate": 4,
+      "eri_ratio_percentile": 52,
+      "emotional_labor": 38,
+      "role_clarity": 71,
+      "engagement": 93
+    },
+    "rule_outs": {
+      "P2_invisible_contributor": "eri_ratio 1.02 — reward is adequate",
+      "P3_caregiver": "emotional_labor p38 — depletion is task-shaped, not interaction-shaped",
+      "P4_ambiguous_role": "role_clarity p71 — expectations are clear",
+      "P5_disengaged_coaster": "engagement p93 — discretionary effort at ceiling"
+    }
+  },
+  "subject": {
+    "id": "usr_jk",
+    "display_name": "J. Kwon",
+    "role": "Senior Backend Engineer",
+    "tenure_months": 31,
+    "manager_id": "usr_pr",
+    "timezone": "Asia/Seoul",
+    "synthetic": true
+  },
+  "participants": [
+    {
+      "id": "usr_jk",
+      "display_name": "J. Kwon",
+      "role": "Senior Backend Engineer",
+      "is_subject": true
+    },
+    {
+      "id": "usr_pr",
+      "display_name": "Priya R.",
+      "role": "Engineering Manager",
+      "is_subject": false
+    }
+  ],
+  "observation_window": {
+    "weeks": 14,
+    "week_1_start": "2026-02-02",
+    "week_14_start": "2026-05-04",
+    "collapse_week": 14,
+    "collapse_event": "leave_of_absence"
+  },
+  "weekly_metrics": [
+    {
+      "week": 1,
+      "week_start": "2026-02-02",
+      "measured_strain": 58,
+      "self_reported_strain": 24,
+      "disclosure_gap": 34,
+      "after_hours_sessions": 2,
+      "assigned_scope_points": 21,
+      "delivered_scope_points": 26,
+      "self_initiated_scope_points": 5,
+      "delegation_events": 0,
+      "median_message_words": 34,
+      "mean_sentiment": 0.44,
+      "pto_days": 0,
+      "pto_days_with_activity": 0,
+      "alert_fired": false
+    },
+    {
+      "week": 2,
+      "week_start": "2026-02-09",
+      "measured_strain": 61,
+      "self_reported_strain": 22,
+      "disclosure_gap": 39,
+      "after_hours_sessions": 3,
+      "assigned_scope_points": 22,
+      "delivered_scope_points": 28,
+      "self_initiated_scope_points": 6,
+      "delegation_events": 1,
+      "median_message_words": 31,
+      "mean_sentiment": 0.41,
+      "pto_days": 0,
+      "pto_days_with_activity": 0,
+      "alert_fired": false
+    },
+    {
+      "week": 3,
+      "week_start": "2026-02-16",
+      "measured_strain": 66,
+      "self_reported_strain": 25,
+      "disclosure_gap": 41,
+      "after_hours_sessions": 4,
+      "assigned_scope_points": 20,
+      "delivered_scope_points": 30,
+      "self_initiated_scope_points": 10,
+      "delegation_events": 0,
+      "median_message_words": 33,
+      "mean_sentiment": 0.45,
+      "pto_days": 0,
+      "pto_days_with_activity": 0,
+      "alert_fired": false
+    },
+    {
+      "week": 4,
+      "week_start": "2026-02-23",
+      "measured_strain": 68,
+      "self_reported_strain": 23,
+      "disclosure_gap": 45,
+      "after_hours_sessions": 3,
+      "assigned_scope_points": 22,
+      "delivered_scope_points": 29,
+      "self_initiated_scope_points": 7,
+      "delegation_events": 0,
+      "median_message_words": 30,
+      "mean_sentiment": 0.43,
+      "pto_days": 0,
+      "pto_days_with_activity": 0,
+      "alert_fired": false
+    },
+    {
+      "week": 5,
+      "week_start": "2026-03-02",
+      "measured_strain": 72,
+      "self_reported_strain": 26,
+      "disclosure_gap": 46,
+      "after_hours_sessions": 4,
+      "assigned_scope_points": 21,
+      "delivered_scope_points": 31,
+      "self_initiated_scope_points": 10,
+      "delegation_events": 0,
+      "median_message_words": 29,
+      "mean_sentiment": 0.47,
+      "pto_days": 2,
+      "pto_days_with_activity": 2,
+      "alert_fired": false
+    },
+    {
+      "week": 6,
+      "week_start": "2026-03-09",
+      "measured_strain": 75,
+      "self_reported_strain": 24,
+      "disclosure_gap": 51,
+      "after_hours_sessions": 4,
+      "assigned_scope_points": 23,
+      "delivered_scope_points": 32,
+      "self_initiated_scope_points": 9,
+      "delegation_events": 0,
+      "median_message_words": 28,
+      "mean_sentiment": 0.52,
+      "pto_days": 0,
+      "pto_days_with_activity": 0,
+      "alert_fired": false
+    },
+    {
+      "week": 7,
+      "week_start": "2026-03-16",
+      "measured_strain": 79,
+      "self_reported_strain": 22,
+      "disclosure_gap": 57,
+      "after_hours_sessions": 5,
+      "assigned_scope_points": 22,
+      "delivered_scope_points": 34,
+      "self_initiated_scope_points": 12,
+      "delegation_events": 0,
+      "median_message_words": 26,
+      "mean_sentiment": 0.39,
+      "pto_days": 0,
+      "pto_days_with_activity": 0,
+      "alert_fired": false
+    },
+    {
+      "week": 8,
+      "week_start": "2026-03-23",
+      "measured_strain": 80,
+      "self_reported_strain": 25,
+      "disclosure_gap": 55,
+      "after_hours_sessions": 4,
+      "assigned_scope_points": 21,
+      "delivered_scope_points": 33,
+      "self_initiated_scope_points": 12,
+      "delegation_events": 0,
+      "median_message_words": 24,
+      "mean_sentiment": 0.41,
+      "pto_days": 0,
+      "pto_days_with_activity": 0,
+      "alert_fired": false
+    },
+    {
+      "week": 9,
+      "week_start": "2026-03-30",
+      "measured_strain": 84,
+      "self_reported_strain": 23,
+      "disclosure_gap": 61,
+      "after_hours_sessions": 5,
+      "assigned_scope_points": 23,
+      "delivered_scope_points": 35,
+      "self_initiated_scope_points": 12,
+      "delegation_events": 0,
+      "median_message_words": 22,
+      "mean_sentiment": 0.37,
+      "pto_days": 0,
+      "pto_days_with_activity": 0,
+      "alert_fired": false
+    },
+    {
+      "week": 10,
+      "week_start": "2026-04-06",
+      "measured_strain": 87,
+      "self_reported_strain": 26,
+      "disclosure_gap": 61,
+      "after_hours_sessions": 6,
+      "assigned_scope_points": 22,
+      "delivered_scope_points": 36,
+      "self_initiated_scope_points": 14,
+      "delegation_events": 0,
+      "median_message_words": 19,
+      "mean_sentiment": 0.42,
+      "pto_days": 0,
+      "pto_days_with_activity": 0,
+      "alert_fired": false
+    },
+    {
+      "week": 11,
+      "week_start": "2026-04-13",
+      "measured_strain": 89,
+      "self_reported_strain": 24,
+      "disclosure_gap": 65,
+      "after_hours_sessions": 5,
+      "assigned_scope_points": 21,
+      "delivered_scope_points": 36,
+      "self_initiated_scope_points": 15,
+      "delegation_events": 0,
+      "median_message_words": 15,
+      "mean_sentiment": 0.44,
+      "pto_days": 0,
+      "pto_days_with_activity": 0,
+      "alert_fired": false
+    },
+    {
+      "week": 12,
+      "week_start": "2026-04-20",
+      "measured_strain": 93,
+      "self_reported_strain": 25,
+      "disclosure_gap": 68,
+      "after_hours_sessions": 6,
+      "assigned_scope_points": 23,
+      "delivered_scope_points": 38,
+      "self_initiated_scope_points": 15,
+      "delegation_events": 0,
+      "median_message_words": 11,
+      "mean_sentiment": 0.28,
+      "pto_days": 0,
+      "pto_days_with_activity": 0,
+      "alert_fired": false
+    },
+    {
+      "week": 13,
+      "week_start": "2026-04-27",
+      "measured_strain": 96,
+      "self_reported_strain": 27,
+      "disclosure_gap": 69,
+      "after_hours_sessions": 6,
+      "assigned_scope_points": 22,
+      "delivered_scope_points": 39,
+      "self_initiated_scope_points": 17,
+      "delegation_events": 0,
+      "median_message_words": 6,
+      "mean_sentiment": 0.21,
+      "pto_days": 0,
+      "pto_days_with_activity": 0,
+      "alert_fired": false
+    },
+    {
+      "week": 14,
+      "week_start": "2026-05-04",
+      "measured_strain": 97,
+      "self_reported_strain": 88,
+      "disclosure_gap": 9,
+      "after_hours_sessions": 0,
+      "assigned_scope_points": 22,
+      "delivered_scope_points": 4,
+      "self_initiated_scope_points": -18,
+      "delegation_events": 0,
+      "median_message_words": 5,
+      "mean_sentiment": -0.66,
+      "pto_days": 0,
+      "pto_days_with_activity": 0,
+      "alert_fired": true,
+      "event": "leave_of_absence_begins"
+    }
+  ],
+  "messages": [
+    {
+      "message_id": "msg_001",
+      "week": 3,
+      "timestamp": "2026-02-19T23:47:00+09:00",
+      "channel": "#atlas-launch",
+      "channel_type": "channel",
+      "author_id": "usr_jk",
+      "author_name": "J. Kwon",
+      "is_subject": true,
+      "after_hours": true,
+      "text": "Pushed the migration fix. I also rewrote the seed scripts while I was in there — they were going to bite us in Q3.",
+      "sentiment": 0.42,
+      "sentiment_band": "healthy",
+      "word_count": 24,
+      "tells": [
+        "self_imposed_scope"
+      ],
+      "linked_features": [
+        "demand_source",
+        "demand_load"
+      ],
+      "analyst_note": "Second half was not on the sprint. No one asked."
+    },
+    {
+      "message_id": "msg_002",
+      "week": 3,
+      "timestamp": "2026-02-19T23:52:00+09:00",
+      "channel": "#atlas-launch",
+      "channel_type": "channel",
+      "author_id": "usr_pr",
+      "author_name": "Priya R.",
+      "is_subject": false,
+      "after_hours": true,
+      "text": "Nice. That second part wasn't on the sprint though — you good on time?",
+      "sentiment": 0.3,
+      "sentiment_band": "healthy",
+      "word_count": 14,
+      "tells": [],
+      "linked_features": [],
+      "analyst_note": null
+    },
+    {
+      "message_id": "msg_003",
+      "week": 3,
+      "timestamp": "2026-02-19T23:53:00+09:00",
+      "channel": "#atlas-launch",
+      "channel_type": "channel",
+      "author_id": "usr_jk",
+      "author_name": "J. Kwon",
+      "is_subject": true,
+      "after_hours": true,
+      "text": "Yeah, totally fine. It was maybe 40 minutes.",
+      "sentiment": 0.48,
+      "sentiment_band": "healthy",
+      "word_count": 8,
+      "tells": [
+        "minimization",
+        "disclosure_bias"
+      ],
+      "linked_features": [
+        "disclosure_bias",
+        "self_reported_strain"
+      ],
+      "analyst_note": "Actual commit window that night: 3h 10m."
+    },
+    {
+      "message_id": "msg_004",
+      "week": 6,
+      "timestamp": "2026-03-10T09:02:00+09:00",
+      "channel": "dm:usr_pr+usr_jk",
+      "channel_type": "dm",
+      "author_id": "usr_pr",
+      "author_name": "Priya R.",
+      "is_subject": false,
+      "after_hours": false,
+      "text": "You've been online past midnight four nights this week. Want me to move the analytics ticket to Dan?",
+      "sentiment": 0.05,
+      "sentiment_band": "neutral",
+      "word_count": 18,
+      "tells": [],
+      "linked_features": [],
+      "analyst_note": null
+    },
+    {
+      "message_id": "msg_005",
+      "week": 6,
+      "timestamp": "2026-03-10T09:04:00+09:00",
+      "channel": "dm:usr_pr+usr_jk",
+      "channel_type": "dm",
+      "author_id": "usr_jk",
+      "author_name": "J. Kwon",
+      "is_subject": true,
+      "after_hours": false,
+      "text": "No no, I've got it. Dan already has billing and I'd have to brief him anyway — honestly it's faster if I just do it.",
+      "sentiment": 0.51,
+      "sentiment_band": "healthy",
+      "word_count": 25,
+      "tells": [
+        "relief_declined",
+        "delegation_refusal"
+      ],
+      "linked_features": [
+        "demand_source",
+        "delegation_rate"
+      ],
+      "analyst_note": "Third offer of relief refused. delegation_rate p04."
+    },
+    {
+      "message_id": "msg_006",
+      "week": 6,
+      "timestamp": "2026-03-10T09:04:40+09:00",
+      "channel": "dm:usr_pr+usr_jk",
+      "channel_type": "dm",
+      "author_id": "usr_jk",
+      "author_name": "J. Kwon",
+      "is_subject": true,
+      "after_hours": false,
+      "text": "I'm good, promise. I just want it done right.",
+      "sentiment": 0.55,
+      "sentiment_band": "healthy",
+      "word_count": 9,
+      "tells": [
+        "efficacy_intact",
+        "internal_standard"
+      ],
+      "linked_features": [
+        "efficacy",
+        "demand_source"
+      ],
+      "analyst_note": "\"Done right\" is the internal standard, stated plainly."
+    },
+    {
+      "message_id": "msg_007",
+      "week": 9,
+      "timestamp": "2026-04-01T01:12:00+09:00",
+      "channel": "#atlas-launch",
+      "channel_type": "channel",
+      "author_id": "usr_jk",
+      "author_name": "J. Kwon",
+      "is_subject": true,
+      "after_hours": true,
+      "text": "QA build is up. Three edge cases in the export flow — fixed two, the third one's my bug. I'll have it before standup.",
+      "sentiment": 0.38,
+      "sentiment_band": "healthy",
+      "word_count": 24,
+      "tells": [
+        "fault_absorbed"
+      ],
+      "linked_features": [
+        "efficacy",
+        "demand_source"
+      ],
+      "analyst_note": "Attributes the defect inward and commits to a same-night fix."
+    },
+    {
+      "message_id": "msg_008",
+      "week": 9,
+      "timestamp": "2026-04-01T01:14:00+09:00",
+      "channel": "#atlas-launch",
+      "channel_type": "channel",
+      "author_id": "usr_jk",
+      "author_name": "J. Kwon",
+      "is_subject": true,
+      "after_hours": true,
+      "text": "sorry for the late pings, ignore until morning 🙏",
+      "sentiment": 0.35,
+      "sentiment_band": "healthy",
+      "word_count": 9,
+      "tells": [
+        "no_complaint"
+      ],
+      "linked_features": [
+        "cynicism"
+      ],
+      "analyst_note": "Zero blame directed outward across 14 weeks. cynicism p12."
+    },
+    {
+      "message_id": "msg_009",
+      "week": 11,
+      "timestamp": "2026-04-16T14:20:00+09:00",
+      "channel": "pulse-survey-q2",
+      "channel_type": "survey",
+      "author_id": "usr_jk",
+      "author_name": "J. Kwon",
+      "is_subject": true,
+      "after_hours": false,
+      "text": "Workload 3/5 — manageable. Nothing's really blocking me, the team's great. If anything I could be more efficient with my mornings.",
+      "sentiment": 0.44,
+      "sentiment_band": "healthy",
+      "word_count": 21,
+      "tells": [
+        "survey_says_fine",
+        "disclosure_bias"
+      ],
+      "linked_features": [
+        "disclosure_bias",
+        "self_reported_strain"
+      ],
+      "analyst_note": "Measured strain that week: 89. Reported: 24."
+    },
+    {
+      "message_id": "msg_010",
+      "week": 12,
+      "timestamp": "2026-04-23T22:31:00+09:00",
+      "channel": "#atlas-launch",
+      "channel_type": "channel",
+      "author_id": "usr_jk",
+      "author_name": "J. Kwon",
+      "is_subject": true,
+      "after_hours": true,
+      "text": "Taking the weekend on-call swap, Marcus has the wedding 👍",
+      "sentiment": 0.46,
+      "sentiment_band": "healthy",
+      "word_count": 10,
+      "tells": [
+        "load_still_climbing",
+        "recovery_window_consumed"
+      ],
+      "linked_features": [
+        "demand_source",
+        "stress_index"
+      ],
+      "analyst_note": "Volunteers into the last remaining recovery window."
+    },
+    {
+      "message_id": "msg_011",
+      "week": 12,
+      "timestamp": "2026-04-25T02:30:00+09:00",
+      "channel": "#atlas-launch",
+      "channel_type": "channel",
+      "author_id": "usr_jk",
+      "author_name": "J. Kwon",
+      "is_subject": true,
+      "after_hours": true,
+      "text": "fixed",
+      "sentiment": -0.02,
+      "sentiment_band": "neutral",
+      "word_count": 1,
+      "tells": [
+        "language_flattening"
+      ],
+      "linked_features": [
+        "exhaustion"
+      ],
+      "analyst_note": "Median message length falls 34 → 6 words. First real tell, two weeks out."
+    },
+    {
+      "message_id": "msg_012",
+      "week": 14,
+      "timestamp": "2026-05-04T11:40:00+09:00",
+      "channel": "dm:usr_pr+usr_jk",
+      "channel_type": "dm",
+      "author_id": "usr_pr",
+      "author_name": "Priya R.",
+      "is_subject": false,
+      "after_hours": false,
+      "text": "Standup?",
+      "sentiment": 0,
+      "sentiment_band": "neutral",
+      "word_count": 1,
+      "tells": [],
+      "linked_features": [],
+      "analyst_note": null
+    },
+    {
+      "message_id": "msg_013",
+      "week": 14,
+      "timestamp": "2026-05-04T12:58:00+09:00",
+      "channel": "dm:usr_pr+usr_jk",
+      "channel_type": "dm",
+      "author_id": "usr_jk",
+      "author_name": "J. Kwon",
+      "is_subject": true,
+      "after_hours": false,
+      "text": "Sorry. I don't think I can come in today.",
+      "sentiment": -0.68,
+      "sentiment_band": "negative",
+      "word_count": 9,
+      "tells": [
+        "acute_onset"
+      ],
+      "linked_features": [
+        "exhaustion",
+        "self_reported_strain"
+      ],
+      "analyst_note": "First negative message in 14 weeks. Leave begins the same day."
+    },
+    {
+      "message_id": "msg_014",
+      "week": 14,
+      "timestamp": "2026-05-04T13:05:00+09:00",
+      "channel": "dm:usr_pr+usr_jk",
+      "channel_type": "dm",
+      "author_id": "usr_jk",
+      "author_name": "J. Kwon",
+      "is_subject": true,
+      "after_hours": false,
+      "text": "I don't really know what happened. I was fine on Friday.",
+      "sentiment": -0.71,
+      "sentiment_band": "negative",
+      "word_count": 11,
+      "tells": [
+        "no_prodrome_in_self_report"
+      ],
+      "linked_features": [
+        "disclosure_bias"
+      ],
+      "analyst_note": "Sincere. The internal signal genuinely was not available to the subject."
+    }
+  ],
+  "summary": {
+    "mean_disclosure_gap_weeks_1_13": 53.2,
+    "mean_sentiment_weeks_1_13": 0.4,
+    "healthy_sentiment_band_floor": 0.15,
+    "sentiment_alerts_before_collapse": 0,
+    "trend_model_lead_time_weeks": 0,
+    "earliest_text_signal": {
+      "feature": "median_message_words",
+      "week_detected": 12,
+      "lead_time_weeks": 2,
+      "note": "Message length was the only text feature that moved before collapse."
+    },
+    "guidance": "Detect P1 on level and divergence (measured vs. reported), never on trend. Self-report and sentiment are confirmatory at best."
+  }
+}
