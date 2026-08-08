@@ -13,6 +13,13 @@ psychological
 self-reported
 environmental
 
+## Tech Stack
+
+- **React 18** (via CDN, no build step)
+- **Babel Standalone** (in-browser JSX transform)
+- **Claude Sonnet 4.6** (AI sentiment analysis pipeline)
+- **Python `http.server`** (local dev server, managed via `uv`)
+
 ## Dev Notes
 
 **Run locally:**
