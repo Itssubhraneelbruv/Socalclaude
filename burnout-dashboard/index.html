@@ -362,6 +362,12 @@
 
     .env-note { font-size: 11px; color: #bbb; margin-top: 4px; }
 
+    /* ── Overview page ── */
+    .overview-layout { display: flex; flex-direction: column; gap: 16px; }
+    .overview-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; padding: 20px; }
+    .overview-bottom { display: flex; gap: 16px; }
+    .overview-bottom .overview-card { flex: 1; }
+
     .risk-badge-wrap { text-align: right; }
 
     .risk-badge {
@@ -770,6 +776,59 @@
       );
     }
 
+    function OverviewPage({ alerts, assigned }) {
+      return (
+        <div className="center-panel">
+          <div className="alert-header"><h2>Overview</h2></div>
+          <div className="overview-layout">
+            <div className="overview-card">
+              <div className="section-label" style={{marginBottom: 12}}>Alert Summary</div>
+              <div className="stat-cards">
+                <div className="stat-card high">
+                  <div className="stat-num">{alerts.filter(a => a.risk === "High").length}</div>
+                  <div className="stat-lbl">High Risk</div>
+                </div>
+                <div className="stat-card medium">
+                  <div className="stat-num">{alerts.filter(a => a.risk === "Medium").length}</div>
+                  <div className="stat-lbl">Medium Risk</div>
+                </div>
+                <div className="stat-card green">
+                  <div className="stat-num">{assigned.size}</div>
+                  <div className="stat-lbl">Days Assigned</div>
+                </div>
+              </div>
+            </div>
+            <div className="overview-bottom">
+              <div className="overview-card">
+                <div className="section-label" style={{marginBottom: 12}}>Team Breakdown</div>
+                <table className="team-table">
+                  <thead><tr><th>TEAM</th><th>ALERTS</th><th>STATUS</th></tr></thead>
+                  <tbody>
+                    {BASE_TEAM_STATS.map(t => (
+                      <tr key={t.team}>
+                        <td>{t.team}</td>
+                        <td>{t.alerts}</td>
+                        <td><span className={`status-pill ${t.risk}`}>{t.risk.charAt(0).toUpperCase() + t.risk.slice(1)}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="overview-card">
+                <div className="section-label" style={{marginBottom: 12}}>Pipeline</div>
+                <div className="pipeline">
+                  <div className="pipe-step done"><div className="pipe-icon">✓</div><span>Slack messages ingested</span></div>
+                  <div className="pipe-step done"><div className="pipe-icon">✓</div><span>AI sentiment analysis</span></div>
+                  <div className="pipe-step active"><div className="pipe-icon">●</div><span>HR review &amp; action</span></div>
+                  <div className="pipe-step"><div className="pipe-icon">○</div><span>Day off scheduled</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     function buildJimmyAlert(data) {
       const ws    = data.week_summary;
       const daily = data.daily;
@@ -968,7 +1027,7 @@
                     {showGroup && <div className="nav-group-label">{item.group}</div>}
                     <div
                       className={`nav-item ${activeNav === item.label ? "active" : ""}`}
-                      onClick={() => setActiveNav(item.label)}
+                      onClick={() => { setActiveNav(item.label); if (item.label === "Overview") setActiveTab("Dashboard"); if (item.label === "Alerts") setActiveTab("Alerts"); }}
                     >
                       <span className="nav-icon">{item.icon}</span>
                       {item.label}
@@ -988,7 +1047,7 @@
                 <button
                   key={tab}
                   className={`tab ${activeTab === tab ? "active" : ""}`}
-                  onClick={() => { setActiveTab(tab); if (tab === "Alerts") setActiveNav("Alerts"); }}
+                  onClick={() => { setActiveTab(tab); if (tab === "Alerts") setActiveNav("Alerts"); if (tab === "Dashboard") setActiveNav("Overview"); }}
                 >
                   {tab}
                 </button>
@@ -1005,6 +1064,8 @@
                   setProfileTab={setProfileTab}
                   onBack={() => setProfileView(null)}
                 />
+              ) : activeNav === "Overview" ? (
+                <OverviewPage alerts={alerts} assigned={assigned} />
               ) : activeNav === "Team Health" ? (
                 <div className="center-panel">
                   <div className="alert-header">
