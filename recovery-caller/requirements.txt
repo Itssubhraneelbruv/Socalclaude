@@ -1,0 +1,6 @@
+anthropic==0.121.0
+elevenlabs==2.62.0
+fastapi==0.141.1
+python-dotenv==1.2.2
+twilio==9.10.9
+uvicorn==0.52.1

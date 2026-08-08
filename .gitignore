@@ -10,3 +10,8 @@ venv/
 # macOS
 .DS_Store
 *.swp
+
+# Secrets - never commit real keys (use recovery-caller/.env.example as template)
+.env
+.env.local
+*.env.local

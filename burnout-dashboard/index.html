@@ -860,6 +860,33 @@
       };
     }
 
+    // ── Recovery-call backend (recovery-caller/server.py) ──
+    // Same origin when the server is serving this page; absolute when the file is
+    // opened straight from disk. CORS is open on the server, so both work.
+    const API_BASE = location.protocol === "file:" ? "http://localhost:8000" : "";
+
+    // ── Live pipeline log presentation ──
+    const LOG_DONE   = ["done", "error"];
+    const LOG_COLORS = {
+      start:      "#5eb0ff",
+      claude:     "#c99bff",
+      claude_wait:"#6b7d8f",
+      headline:   "#ffd479",
+      opening:    "#9ad4a0",
+      dial:       "#ffb454",
+      done:       "#3ddc84",
+      error:      "#ff6b6b",
+    };
+    const LOG_LABELS = {
+      load:       "DATA",
+      load_done:  "DATA",
+      claude:     "CLAUDE",
+      headline:   "FINDING",
+      opening:    "AGENT OPENS:",
+      brief_done: "BRIEF",
+      dial:       "TWILIO",
+    };
+
     const BASE_ALERTS = [
       {
         id: 1,
@@ -984,6 +1011,7 @@
       const [jimmyData, setJimmyData] = useState(null);
       const [profileView, setProfileView] = useState(null);
       const [profileTab, setProfileTab]   = useState("physiological");
+      const [log, setLog]                 = useState([]);
 
       useEffect(() => {
         fetch("jimmy_week.json")
@@ -1002,7 +1030,37 @@
       const isDismissed = dismissed.has(alert.id);
       const accent      = alert.risk === "High" ? "#c0392b" : "#e07b54";
 
-      const handleAssign = () => setAssigned(s => new Set([...s, alert.id]));
+      // Marks the alert resolved, then runs the recovery-call pipeline and streams
+      // progress into the log panel. The server picks the subject (DEFAULT_EMPLOYEE
+      // in recovery-caller/server.py), so this needs no employee id.
+      const handleAssign = () => {
+        setAssigned(s => new Set([...s, alert.id]));
+        setLog([{ step: "open", message: "Connecting to pipeline...", t: 0 }]);
+
+        const es = new EventSource(`${API_BASE}/api/assign-day-off/stream`);
+
+        es.onmessage = (e) => {
+          const entry = JSON.parse(e.data);
+          setLog(prev => {
+            // Collapse consecutive heartbeats into one ticking line.
+            const last = prev[prev.length - 1];
+            if (entry.step === "claude_wait" && last && last.step === "claude_wait") {
+              return [...prev.slice(0, -1), entry];
+            }
+            return [...prev, entry];
+          });
+          if (entry.step === "done" || entry.step === "error") es.close();
+        };
+
+        es.onerror = () => {
+          setLog(prev => [...prev, {
+            step: "error",
+            message: `No response from ${API_BASE} - is recovery-caller/server.py running?`,
+            t: 0,
+          }]);
+          es.close();
+        };
+      };
 
       const handleDismiss = () => setDismissed(s => new Set([...s, alert.id]));
 
@@ -1276,6 +1334,65 @@
               </div>
             </div>
           </div>
+
+          {/* Live pipeline log. Fixed overlay, so it sits outside the existing layout. */}
+          {log.length > 0 && (
+            <div style={{
+              position: "fixed", right: 20, bottom: 20, width: 460, maxHeight: "60vh",
+              background: "#0f1720", color: "#d7e0ea", borderRadius: 10, zIndex: 9999,
+              boxShadow: "0 12px 40px rgba(0,0,0,.4)", display: "flex", flexDirection: "column",
+              font: "12px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+            }}>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 8, padding: "9px 12px",
+                borderBottom: "1px solid #22303d", flex: "0 0 auto",
+              }}>
+                <span style={{
+                  width: 8, height: 8, borderRadius: "50%", flex: "0 0 auto",
+                  background: LOG_DONE.includes(log[log.length - 1].step) ? "#3ddc84" : "#f5a623",
+                }} />
+                <strong style={{ fontWeight: 600, letterSpacing: .3 }}>RECOVERY CALL PIPELINE</strong>
+                <span style={{ marginLeft: "auto", opacity: .55 }}>
+                  {log[log.length - 1].t}s
+                </span>
+                <button
+                  onClick={() => setLog([])}
+                  style={{
+                    background: "none", border: "none", color: "#8fa3b5",
+                    cursor: "pointer", fontSize: 15, lineHeight: 1, padding: 0,
+                  }}
+                >×</button>
+              </div>
+
+              <div style={{ overflowY: "auto", padding: "8px 12px 12px" }}>
+                {log.map((e, i) => (
+                  <div key={i} style={{ display: "flex", gap: 8, padding: "2px 0" }}>
+                    <span style={{ opacity: .4, flex: "0 0 42px", textAlign: "right" }}>
+                      {e.t != null ? `${e.t}s` : ""}
+                    </span>
+                    <span style={{ flex: "0 0 14px", color: LOG_COLORS[e.step] || "#8fa3b5" }}>
+                      {e.step === "error" ? "✕" : e.step === "done" ? "✓" : "›"}
+                    </span>
+                    <span style={{
+                      color: LOG_COLORS[e.step] || "#d7e0ea",
+                      fontStyle: e.step === "opening" ? "italic" : "normal",
+                      whiteSpace: "pre-wrap", wordBreak: "break-word",
+                    }}>
+                      {LOG_LABELS[e.step] ? `${LOG_LABELS[e.step]} ` : ""}
+                      {e.message}{e.step === "claude_wait" ? "..." : ""}
+                    </span>
+                  </div>
+                ))}
+                {log[log.length - 1].call?.transcript_url && (
+                  <a
+                    href={log[log.length - 1].call.transcript_url}
+                    target="_blank"
+                    style={{ display: "inline-block", marginTop: 8, color: "#5eb0ff" }}
+                  >Open transcript →</a>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       );
     }
