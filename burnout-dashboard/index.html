@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BurnoutWatch — HR Dashboard</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f4f0;
+      color: #1a1a1a;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .app { display: flex; height: 100vh; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 210px;
+      min-width: 210px;
+      background: #fff;
+      border-right: 1px solid #e8e8e8;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 18px 16px;
+      border-bottom: 1px solid #e8e8e8;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .logo-icon {
+      width: 30px; height: 30px;
+      background: #1a1a1a;
+      color: #fff;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+
+    .logo-text { font-size: 14px; font-weight: 600; flex: 1; }
+    .logo-chevron { color: #999; font-size: 12px; }
+
+    .sidebar-nav { padding: 10px 0; flex: 1; overflow-y: auto; }
+
+    .nav-group-label {
+      font-size: 10px; font-weight: 600; color: #aaa;
+      letter-spacing: 0.8px; text-transform: uppercase;
+      padding: 14px 16px 4px;
+    }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 16px;
+      font-size: 13.5px; color: #555;
+      cursor: pointer;
+      transition: background 0.1s;
+      user-select: none;
+    }
+
+    .nav-item:hover { background: #f5f4f0; }
+    .nav-item.active { color: #1a1a1a; font-weight: 600; background: #f5f4f0; }
+
+    .nav-icon { width: 18px; text-align: center; font-size: 14px; opacity: 0.65; }
+    .nav-item.active .nav-icon { opacity: 1; }
+
+    /* ── Main ── */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+    /* ── Top Tabs ── */
+    .top-tabs {
+      display: flex;
+      border-bottom: 1px solid #e8e8e8;
+      background: #fff;
+      flex-shrink: 0;
+    }
+
+    .tab {
+      padding: 14px 32px;
+      font-size: 14px; color: #888;
+      background: none; border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer; font-family: inherit;
+      transition: color 0.12s;
+      margin-bottom: -1px;
+    }
+
+    .tab:hover { color: #333; }
+    .tab.active { color: #1a1a1a; font-weight: 500; border-bottom-color: #c0392b; }
+
+    /* ── Content ── */
+    .content { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── Center Panel ── */
+    .center-panel { flex: 1; padding: 24px 28px; overflow-y: auto; min-width: 0; }
+
+    .alert-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .alert-header h2 { font-size: 18px; font-weight: 600; }
+
+    .alert-count {
+      background: #fef3f2; color: #c0392b;
+      font-size: 12px; font-weight: 600;
+      padding: 3px 10px; border-radius: 20px;
+      border: 1px solid #fcd0cb;
+    }
+
+    /* ── Slide Nav ── */
+    .slide-nav {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .slide-btn {
+      width: 32px; height: 32px;
+      border: 1px solid #e0e0e0; background: #fff;
+      border-radius: 6px; cursor: pointer;
+      font-size: 15px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.1s, border-color 0.1s;
+      font-family: inherit;
+    }
+
+    .slide-btn:hover:not(:disabled) { background: #f0f0f0; border-color: #ccc; }
+    .slide-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .slide-dots { display: flex; gap: 7px; align-items: center; }
+
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      border: none; background: #ddd;
+      cursor: pointer; padding: 0;
+      transition: background 0.15s, transform 0.15s;
+    }
+
+    .dot:hover { background: #bbb; }
+    .dot.current { background: #c0392b; transform: scale(1.25); }
+    .dot.is-assigned { background: #27ae60; }
+    .dot.is-dismissed { background: #ccc; }
+
+    .slide-counter { font-size: 13px; color: #999; margin-left: 2px; }
+
+    /* ── Alert Card ── */
+    .alert-card {
+      background: #fff;
+      border: 1px solid #e8e8e8;
+      border-radius: 10px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .alert-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+
+    .alert-card.high::before { background: #c0392b; }
+    .alert-card.medium::before { background: #e07b54; }
+
+    .action-badge {
+      position: absolute; top: 16px; right: 16px;
+      font-size: 12px; font-weight: 600;
+      padding: 4px 12px; border-radius: 20px;
+    }
+
+    .action-badge.assigned { background: #edfbf1; color: #1e8449; border: 1px solid #a9dfbf; }
+    .action-badge.dismissed { background: #f5f5f5; color: #888; border: 1px solid #ddd; }
+
+    .card-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .employee-info { display: flex; align-items: center; gap: 12px; }
+
+    .avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+
+    .avatar.high { background: #c0392b; }
+    .avatar.medium { background: #e07b54; }
+
+    .employee-name { font-size: 16px; font-weight: 600; margin-bottom: 3px; }
+    .employee-role { font-size: 13px; color: #777; }
+
+    .risk-badge-wrap { text-align: right; }
+
+    .risk-badge {
+      display: inline-block; font-size: 12px; font-weight: 600;
+      padding: 4px 12px; border-radius: 20px; margin-bottom: 4px;
+    }
+
+    .risk-badge.high { background: #fef3f2; color: #c0392b; border: 1px solid #fcd0cb; }
+    .risk-badge.medium { background: #fff8f3; color: #e07b54; border: 1px solid #fde5d4; }
+    .detected-date { font-size: 12px; color: #aaa; }
+
+    /* ── Sentiment Row ── */
+    .sentiment-row {
+      display: flex; gap: 24px; align-items: flex-start;
+      padding: 16px; background: #fafafa;
+      border: 1px solid #f0f0f0; border-radius: 8px;
+      margin-bottom: 18px;
+    }
+
+    .score-label { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .score-value { font-size: 38px; font-weight: 700; line-height: 1; }
+    .score-max { font-size: 16px; font-weight: 400; color: #ccc; }
+    .score-sub { font-size: 11px; color: #bbb; margin-top: 5px; }
+    .chart-wrap { flex: 1; }
+    .chart-label { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+
+    /* ── AI Summary ── */
+    .ai-summary { margin-bottom: 18px; }
+
+    .section-label {
+      font-size: 10px; font-weight: 600; color: #aaa;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 7px;
+    }
+
+    .ai-summary p { font-size: 14px; color: #444; line-height: 1.65; }
+
+    /* ── Snippets ── */
+    .snippets { margin-bottom: 22px; }
+
+    .snippet {
+      padding: 10px 12px;
+      background: #fafafa;
+      border: 1px solid #f0f0f0;
+      border-left: 3px solid #e0e0e0;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 6px;
+    }
+
+    .snippet-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+    .snippet-time { font-size: 11px; color: #bbb; }
+    .snippet-text { font-size: 13px; color: #555; font-style: italic; line-height: 1.5; }
+
+    /* ── Actions ── */
+    .alert-actions { display: flex; gap: 10px; }
+
+    .btn-assign {
+      padding: 10px 22px;
+      background: #c0392b; color: #fff;
+      border: none; border-radius: 7px;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      transition: background 0.15s;
+    }
+
+    .btn-assign:hover:not(:disabled) { background: #a93226; }
+    .btn-assign.done { background: #27ae60; }
+    .btn-assign:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .btn-dismiss {
+      padding: 10px 18px;
+      background: #fff; color: #888;
+      border: 1px solid #ddd; border-radius: 7px;
+      font-size: 14px; cursor: pointer; font-family: inherit;
+      transition: background 0.12s;
+    }
+
+    .btn-dismiss:hover:not(:disabled) { background: #f5f5f5; }
+    .btn-dismiss:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── Right Panel ── */
+    .right-panel {
+      width: 275px; min-width: 275px;
+      border-left: 1px solid #e8e8e8;
+      background: #fff;
+      overflow-y: auto;
+    }
+
+    .panel-section {
+      padding: 20px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .panel-section:last-child { border-bottom: none; }
+
+    .summary-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+
+    .summary-tab {
+      padding: 5px 12px; font-size: 12px;
+      border: 1px solid #e0e0e0; border-radius: 20px;
+      background: #fff; cursor: pointer; font-family: inherit;
+      color: #888; transition: all 0.12s;
+    }
+
+    .summary-tab.active { background: #c0392b; color: #fff; border-color: #c0392b; }
+
+    .stat-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .stat-card {
+      padding: 12px; border-radius: 8px; border: 1px solid #f0f0f0;
+    }
+
+    .stat-card.high { background: #fef3f2; border-color: #fcd0cb; }
+    .stat-card.medium { background: #fff8f3; border-color: #fde5d4; }
+    .stat-card.green {
+      background: #edfbf1; border-color: #a9dfbf;
+      grid-column: span 2;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .stat-num { font-size: 26px; font-weight: 700; line-height: 1; margin-bottom: 3px; }
+    .stat-card.high .stat-num { color: #c0392b; }
+    .stat-card.medium .stat-num { color: #e07b54; }
+    .stat-card.green .stat-num { color: #1e8449; font-size: 22px; margin: 0; }
+    .stat-lbl { font-size: 11px; color: #888; }
+    .stat-card.green .stat-lbl { color: #1e8449; font-size: 12px; }
+
+    /* ── Team Table ── */
+    .team-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+
+    .team-table th {
+      text-align: left; color: #aaa;
+      font-size: 10px; font-weight: 600; letter-spacing: 0.6px;
+      padding-bottom: 8px; border-bottom: 1px solid #f0f0f0;
+    }
+
+    .team-table td {
+      padding: 9px 0; color: #444;
+      border-bottom: 1px solid #f8f8f8;
+      vertical-align: middle;
+    }
+
+    .team-table tr:last-child td { border-bottom: none; }
+
+    .status-pill {
+      font-size: 11px; font-weight: 600;
+      padding: 2px 8px; border-radius: 10px;
+    }
+
+    .status-pill.high { background: #fef3f2; color: #c0392b; }
+    .status-pill.medium { background: #fff8f3; color: #e07b54; }
+    .status-pill.low { background: #edfbf1; color: #1e8449; }
+
+    /* ── Pipeline ── */
+    .pipeline { display: flex; flex-direction: column; gap: 11px; }
+
+    .pipe-step { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #bbb; }
+    .pipe-step.done { color: #27ae60; }
+    .pipe-step.active { color: #c0392b; font-weight: 500; }
+
+    .pipe-icon {
+      width: 20px; height: 20px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; flex-shrink: 0;
+    }
+
+    .pipe-step.done .pipe-icon { background: #edfbf1; color: #27ae60; }
+    .pipe-step.active .pipe-icon { background: #fef3f2; color: #c0392b; }
+    .pipe-step:not(.done):not(.active) .pipe-icon { background: #f5f5f5; color: #ccc; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, Fragment } = React;
+
+    const ALERTS = [
+      {
+        id: 1,
+        name: "Sarah Chen",
+        initials: "SC",
+        role: "Senior Engineer",
+        team: "Platform Team",
+        risk: "High",
+        score: 23,
+        trend: [68, 60, 51, 43, 37, 29, 23],
+        date: "Aug 7, 2026",
+        summary: "AI detected consistently negative sentiment over 8 days. Messages indicate exhaustion, frustration with workload, and sharp decline in engagement across team channels.",
+        snippets: [
+          { time: "Yesterday 11:42 PM", text: "I'll just handle it myself, no one else has time anyway 😔" },
+          { time: "Monday 9:15 PM",     text: "another late night... this sprint is absolutely killing me" },
+          { time: "Sunday 3:30 PM",     text: "can't stop thinking about work. feels like i'm drowning" },
+        ],
+      },
+      {
+        id: 2,
+        name: "Marcus Johnson",
+        initials: "MJ",
+        role: "Product Manager",
+        team: "Growth Team",
+        risk: "High",
+        score: 31,
+        trend: [72, 65, 57, 49, 44, 38, 31],
+        date: "Aug 7, 2026",
+        summary: "Sentiment analysis flagged high-stress language and overwork indicators across 12 Slack channels over 5 days. Negative-to-positive message ratio is 4:1.",
+        snippets: [
+          { time: "Yesterday 10:18 PM", text: "I'll skip standup tomorrow, been up since 5am" },
+          { time: "Tuesday 8:45 PM",    text: "we're all stretched way too thin on this launch" },
+          { time: "Monday 11:02 PM",    text: "honestly feeling really burnt out rn not gonna lie" },
+        ],
+      },
+      {
+        id: 3,
+        name: "Priya Patel",
+        initials: "PP",
+        role: "UX Designer",
+        team: "Design Team",
+        risk: "Medium",
+        score: 45,
+        trend: [73, 69, 65, 60, 56, 51, 45],
+        date: "Aug 6, 2026",
+        summary: "Moderate burnout signals detected. Increased after-hours messaging and a subtle language shift toward disengagement have been observed over the past week.",
+        snippets: [
+          { time: "Wednesday 11:55 PM", text: "just finishing up the last mockups, won't be long" },
+          { time: "Tuesday 10:30 PM",   text: "I don't really have capacity for this but I'll make it work" },
+          { time: "Monday 9:00 PM",     text: "feeling a bit off lately, maybe just tired" },
+        ],
+      },
+    ];
+
+    const TEAM_STATS = [
+      { team: "Platform Team", alerts: 1, risk: "high" },
+      { team: "Growth Team",   alerts: 1, risk: "high" },
+      { team: "Design Team",   alerts: 1, risk: "medium" },
+      { team: "Backend Team",  alerts: 0, risk: "low" },
+    ];
+
+    const NAV = [
+      { label: "Overview",        icon: "⊞", group: null },
+      { label: "Alerts",          icon: "🔔", group: null },
+      { label: "Sentiment",       icon: "◎",  group: "Analytics" },
+      { label: "Trends",          icon: "↗",  group: "Analytics" },
+      { label: "Team Health",     icon: "♡",  group: "Analytics" },
+      { label: "Assign Time Off", icon: "📅", group: "Actions" },
+      { label: "Reports",         icon: "📊", group: "Actions" },
+      { label: "Settings",        icon: "⚙",  group: "Actions" },
+    ];
+
+    /* SVG line chart — no external deps */
+    function TrendChart({ data, color }) {
+      const W = 190, H = 60;
+      const pts = data.map((v, i) =>
+        `${(i / (data.length - 1)) * W},${H - (v / 100) * H}`
+      ).join(" ");
+      const lx = W;
+      const ly = H - (data[data.length - 1] / 100) * H;
+      return (
+        <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block" }}>
+          <polyline fill="none" stroke={color} strokeWidth="2.5"
+            strokeLinecap="round" strokeLinejoin="round" points={pts} />
+          <circle cx={lx} cy={ly} r="4" fill={color} />
+        </svg>
+      );
+    }
+
+    function App() {
+      const [idx, setIdx]             = useState(0);
+      const [assigned, setAssigned]   = useState(new Set());
+      const [dismissed, setDismissed] = useState(new Set());
+      const [activeNav, setActiveNav] = useState("Alerts");
+      const [activeTab, setActiveTab] = useState("Dashboard");
+
+      const alert      = ALERTS[idx];
+      const total      = ALERTS.length;
+      const pending    = ALERTS.filter(a => !assigned.has(a.id) && !dismissed.has(a.id)).length;
+      const isAssigned  = assigned.has(alert.id);
+      const isDismissed = dismissed.has(alert.id);
+      const accent      = alert.risk === "High" ? "#c0392b" : "#e07b54";
+
+      const advance = () => { if (idx < total - 1) setIdx(i => i + 1); };
+
+      const handleAssign = () => {
+        setAssigned(s => new Set([...s, alert.id]));
+        advance();
+      };
+
+      const handleDismiss = () => {
+        setDismissed(s => new Set([...s, alert.id]));
+        advance();
+      };
+
+      let lastGroup = null;
+
+      return (
+        <div className="app">
+
+          {/* ── Sidebar ── */}
+          <aside className="sidebar">
+            <div className="sidebar-logo">
+              <div className="logo-icon">HR</div>
+              <span className="logo-text">AcmeCorp HR</span>
+              <span className="logo-chevron">⌄</span>
+            </div>
+            <nav className="sidebar-nav">
+              {NAV.map(item => {
+                const showGroup = item.group && item.group !== lastGroup;
+                if (item.group) lastGroup = item.group;
+                return (
+                  <Fragment key={item.label}>
+                    {showGroup && <div className="nav-group-label">{item.group}</div>}
+                    <div
+                      className={`nav-item ${activeNav === item.label ? "active" : ""}`}
+                      onClick={() => setActiveNav(item.label)}
+                    >
+                      <span className="nav-icon">{item.icon}</span>
+                      {item.label}
+                    </div>
+                  </Fragment>
+                );
+              })}
+            </nav>
+          </aside>
+
+          {/* ── Main ── */}
+          <div className="main">
+
+            {/* Top tabs */}
+            <div className="top-tabs">
+              {["Dashboard", "Alerts", "Analytics", "Settings"].map(tab => (
+                <button
+                  key={tab}
+                  className={`tab ${activeTab === tab ? "active" : ""}`}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            <div className="content">
+
+              {/* ── Center panel ── */}
+              <div className="center-panel">
+                <div className="alert-header">
+                  <h2>Burnout Alerts</h2>
+                  <span className="alert-count">{pending} pending</span>
+                </div>
+
+                {/* Slideshow controls */}
+                <div className="slide-nav">
+                  <button className="slide-btn" onClick={() => setIdx(i => Math.max(0, i - 1))} disabled={idx === 0}>←</button>
+                  <div className="slide-dots">
+                    {ALERTS.map((a, i) => (
+                      <button
+                        key={a.id}
+                        className={[
+                          "dot",
+                          i === idx ? "current" : "",
+                          assigned.has(a.id) ? "is-assigned" : "",
+                          dismissed.has(a.id) ? "is-dismissed" : "",
+                        ].join(" ")}
+                        onClick={() => setIdx(i)}
+                      />
+                    ))}
+                  </div>
+                  <span className="slide-counter">{idx + 1} of {total}</span>
+                  <button className="slide-btn" onClick={() => setIdx(i => Math.min(total - 1, i + 1))} disabled={idx === total - 1}>→</button>
+                </div>
+
+                {/* Alert card */}
+                <div className={`alert-card ${alert.risk.toLowerCase()}`}>
+                  {(isAssigned || isDismissed) && (
+                    <div className={`action-badge ${isAssigned ? "assigned" : "dismissed"}`}>
+                      {isAssigned ? "✓ Day Off Assigned" : "✗ Dismissed"}
+                    </div>
+                  )}
+
+                  <div className="card-header">
+                    <div className="employee-info">
+                      <div className={`avatar ${alert.risk.toLowerCase()}`}>{alert.initials}</div>
+                      <div>
+                        <div className="employee-name">{alert.name}</div>
+                        <div className="employee-role">{alert.role} · {alert.team}</div>
+                      </div>
+                    </div>
+                    <div className="risk-badge-wrap">
+                      <span className={`risk-badge ${alert.risk.toLowerCase()}`}>{alert.risk} Risk</span>
+                      <div className="detected-date">Detected {alert.date}</div>
+                    </div>
+                  </div>
+
+                  <div className="sentiment-row">
+                    <div>
+                      <div className="score-label">Sentiment Score</div>
+                      <div className="score-value" style={{ color: accent }}>
+                        {alert.score}<span className="score-max">/100</span>
+                      </div>
+                      <div className="score-sub">↓ Lower = higher burnout risk</div>
+                    </div>
+                    <div className="chart-wrap">
+                      <div className="chart-label">7-Day Trend</div>
+                      <TrendChart data={alert.trend} color={accent} />
+                    </div>
+                  </div>
+
+                  <div className="ai-summary">
+                    <div className="section-label">AI Analysis</div>
+                    <p>{alert.summary}</p>
+                  </div>
+
+                  <div className="snippets">
+                    <div className="section-label">Flagged Slack Messages</div>
+                    {alert.snippets.map((s, i) => (
+                      <div key={i} className="snippet">
+                        <div className="snippet-meta">
+                          <span>💬</span>
+                          <span className="snippet-time">{s.time}</span>
+                        </div>
+                        <div className="snippet-text">"{s.text}"</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="alert-actions">
+                    <button
+                      className={`btn-assign ${isAssigned ? "done" : ""}`}
+                      onClick={handleAssign}
+                      disabled={isAssigned || isDismissed}
+                    >
+                      {isAssigned ? "✓ Day Off Assigned" : "📅 Assign Day Off"}
+                    </button>
+                    <button
+                      className="btn-dismiss"
+                      onClick={handleDismiss}
+                      disabled={isAssigned || isDismissed}
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Right panel ── */}
+              <div className="right-panel">
+
+                <div className="panel-section">
+                  <div className="section-label" style={{ marginBottom: 12 }}>Alert Summary</div>
+                  <div className="summary-tabs">
+                    <button className="summary-tab active">All ({total})</button>
+                    <button className="summary-tab">Resolved ({assigned.size})</button>
+                  </div>
+                  <div className="stat-cards">
+                    <div className="stat-card high">
+                      <div className="stat-num">{ALERTS.filter(a => a.risk === "High").length}</div>
+                      <div className="stat-lbl">High Risk</div>
+                    </div>
+                    <div className="stat-card medium">
+                      <div className="stat-num">{ALERTS.filter(a => a.risk === "Medium").length}</div>
+                      <div className="stat-lbl">Medium Risk</div>
+                    </div>
+                    <div className="stat-card green">
+                      <div className="stat-num">{assigned.size}</div>
+                      <div className="stat-lbl">Days Assigned</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="panel-section">
+                  <div className="section-label" style={{ marginBottom: 12 }}>Team Breakdown</div>
+                  <table className="team-table">
+                    <thead>
+                      <tr>
+                        <th>TEAM</th>
+                        <th>ALERTS</th>
+                        <th>STATUS</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {TEAM_STATS.map(t => (
+                        <tr key={t.team}>
+                          <td>{t.team}</td>
+                          <td>{t.alerts}</td>
+                          <td>
+                            <span className={`status-pill ${t.risk}`}>
+                              {t.risk.charAt(0).toUpperCase() + t.risk.slice(1)}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="panel-section">
+                  <div className="section-label" style={{ marginBottom: 12 }}>Pipeline</div>
+                  <div className="pipeline">
+                    <div className="pipe-step done">
+                      <div className="pipe-icon">✓</div>
+                      <span>Slack messages ingested</span>
+                    </div>
+                    <div className="pipe-step done">
+                      <div className="pipe-icon">✓</div>
+                      <span>AI sentiment analysis</span>
+                    </div>
+                    <div className="pipe-step active">
+                      <div className="pipe-icon">●</div>
+                      <span>HR review &amp; action</span>
+                    </div>
+                    <div className="pipe-step">
+                      <div className="pipe-icon">○</div>
+                      <span>Day off scheduled</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
