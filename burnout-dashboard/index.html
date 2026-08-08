@@ -252,12 +252,115 @@
     .roster-status.healthy { background: #edfbf1; color: #1e8449; border: 1px solid #a9dfbf; }
 
     .roster-view-link {
-      display: block; margin-top: 10px;
+      display: block; margin-top: 8px;
       font-size: 12px; color: #c0392b;
       cursor: pointer; text-decoration: none;
     }
 
     .roster-view-link:hover { text-decoration: underline; }
+
+    /* ── Jimmy profile view ── */
+    .profile-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 18px; flex-wrap: wrap;
+    }
+
+    .back-btn {
+      padding: 6px 12px; font-size: 13px;
+      border: 1px solid #e0e0e0; background: #fff;
+      border-radius: 6px; cursor: pointer; font-family: inherit;
+      color: #666; transition: background 0.1s; flex-shrink: 0;
+    }
+
+    .back-btn:hover { background: #f5f5f5; }
+    .profile-period { font-size: 13px; color: #aaa; font-weight: 400; margin-left: 4px; }
+
+    .profile-tabs {
+      display: flex;
+      border-bottom: 1px solid #e8e8e8;
+      margin-bottom: 20px;
+    }
+
+    .profile-tab {
+      padding: 10px 20px; font-size: 13.5px;
+      color: #888; background: none; border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer; font-family: inherit;
+      transition: color 0.1s; margin-bottom: -1px;
+    }
+
+    .profile-tab:hover { color: #333; }
+    .profile-tab.active { color: #1a1a1a; font-weight: 500; border-bottom-color: #c0392b; }
+
+    .profile-table {
+      width: 100%; border-collapse: collapse;
+      font-size: 13px; margin-bottom: 20px;
+    }
+
+    .profile-table th {
+      text-align: left; color: #aaa;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+      padding: 0 12px 8px 0; border-bottom: 1px solid #f0f0f0;
+    }
+
+    .profile-table td {
+      padding: 9px 12px 9px 0; color: #444;
+      border-bottom: 1px solid #f8f8f8; vertical-align: middle;
+    }
+
+    .profile-table tr:last-child td { border-bottom: none; }
+
+    .phys-summary { display: flex; gap: 10px; margin-bottom: 20px; }
+
+    .phys-stat {
+      flex: 1; padding: 14px; background: #fafafa;
+      border: 1px solid #f0f0f0; border-radius: 8px;
+    }
+
+    .phys-stat-label { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .phys-stat-value { font-size: 20px; font-weight: 700; line-height: 1.2; color: #1a1a1a; }
+    .phys-stat-value.red { color: #c0392b; }
+    .phys-stat-sub { font-size: 11px; color: #bbb; margin-top: 3px; }
+
+    .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 80px; margin-bottom: 20px; }
+
+    .bar-col { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+
+    .bar {
+      width: 100%; border-radius: 3px 3px 0 0;
+      min-height: 4px; transition: opacity 0.15s;
+    }
+
+    .bar-lbl { font-size: 10px; color: #aaa; }
+
+    .ceiling-note {
+      background: #fff8f3; border: 1px solid #fde5d4;
+      border-radius: 8px; padding: 12px 14px;
+      font-size: 13px; color: #c0392b; margin-bottom: 16px;
+    }
+
+    .ema-entries { display: flex; flex-direction: column; gap: 18px; }
+
+    .ema-day { font-size: 11px; font-weight: 600; color: #aaa; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+
+    .ema-pre { font-size: 12px; color: #888; margin-bottom: 6px; }
+
+    .ema-tag {
+      background: #f0f0f0; color: #888;
+      font-size: 10px; font-weight: 600;
+      padding: 2px 7px; border-radius: 10px;
+      margin-right: 6px; text-transform: uppercase; letter-spacing: 0.3px;
+    }
+
+    .ema-bubble {
+      background: #fafafa; border: 1px solid #f0f0f0;
+      border-left: 3px solid #c0392b;
+      border-radius: 0 8px 8px 0;
+      padding: 10px 14px; font-size: 13.5px;
+      color: #444; line-height: 1.65; font-style: italic;
+    }
+
+    .env-note { font-size: 11px; color: #bbb; margin-top: 4px; }
 
     .risk-badge-wrap { text-align: right; }
 
@@ -439,6 +542,234 @@
     // Normalize RMSSD (observed range 5–42.3 ms) to a 0–100 recovery score
     const rmssdToScore = v => Math.round((v - 5) / (42.3 - 5) * 100);
 
+    const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+    function PhysioTab({ daily, ws }) {
+      const rmssdScores = daily.map(d => rmssdToScore(d.physiology.night_rmssd_ms));
+      const maxScore = Math.max(...rmssdScores);
+      return (
+        <div>
+          <div className="phys-summary">
+            <div className="phys-stat">
+              <div className="phys-stat-label">RMSSD Mon → Fri</div>
+              <div className="phys-stat-value red">{ws.night_rmssd_ms.pct_change_mon_to_fri}%</div>
+              <div className="phys-stat-sub">{ws.night_rmssd_ms.monday} → {ws.night_rmssd_ms.friday} ms</div>
+            </div>
+            <div className="phys-stat">
+              <div className="phys-stat-label">Sleep Mon → Fri</div>
+              <div className="phys-stat-value red">{ws.sleep_duration_h.monday}h → {ws.sleep_duration_h.friday}h</div>
+              <div className="phys-stat-sub">Weekend total: {ws.sleep_duration_h.weekend_total}h</div>
+            </div>
+            <div className="phys-stat">
+              <div className="phys-stat-label">Recovery Returned</div>
+              <div className="phys-stat-value red">{ws.recovery_return.returned ? "Yes" : "No"}</div>
+              <div className="phys-stat-sub">Sunday RMSSD: {ws.night_rmssd_ms.sunday} ms</div>
+            </div>
+          </div>
+
+          <div className="section-label" style={{marginBottom: 8}}>7-Day Recovery Score (RMSSD-based)</div>
+          <div className="bar-chart">
+            {rmssdScores.map((v, i) => (
+              <div key={i} className="bar-col">
+                <div className="bar" style={{
+                  height: Math.max(4, (v / maxScore) * 68),
+                  background: v < 40 ? "#c0392b" : v < 55 ? "#e07b54" : "#27ae60",
+                }} />
+                <div className="bar-lbl">{DAYS[i]}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="section-label" style={{marginBottom: 8}}>Daily Metrics</div>
+          <table className="profile-table">
+            <thead>
+              <tr>
+                <th>Day</th><th>Sleep (h)</th><th>RMSSD (ms)</th>
+                <th>Pulse (bpm)</th><th>EDA (µS)</th><th>Steps</th>
+              </tr>
+            </thead>
+            <tbody>
+              {daily.map((d, i) => (
+                <tr key={i}>
+                  <td><strong>{DAYS[i]}</strong></td>
+                  <td style={{color: d.physiology.sleep_duration_h < 5 ? "#c0392b" : "#444"}}>
+                    {d.physiology.sleep_duration_h}
+                  </td>
+                  <td style={{color: d.physiology.night_rmssd_ms < 20 ? "#c0392b" : d.physiology.night_rmssd_ms < 25 ? "#e07b54" : "#444"}}>
+                    {d.physiology.night_rmssd_ms}
+                  </td>
+                  <td>{d.physiology.work_pulse_rate_bpm != null ? d.physiology.work_pulse_rate_bpm : "—"}</td>
+                  <td>{d.physiology.work_eda_usiemens != null ? d.physiology.work_eda_usiemens : "—"}</td>
+                  <td>{d.physiology.daily_steps.toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+
+    function PsychTab({ workdays }) {
+      const scaleColor = (v, max, higherIsBetter) => {
+        const bad = higherIsBetter ? v <= Math.floor(max * 0.4) : v >= Math.ceil(max * 0.75);
+        const mid = higherIsBetter ? v <= Math.floor(max * 0.6) : v >= Math.ceil(max * 0.55);
+        return bad ? "#c0392b" : mid ? "#e07b54" : "#27ae60";
+      };
+      return (
+        <div>
+          <div className="section-label" style={{marginBottom: 8}}>
+            Pre-shift · Energy &amp; Sleep Quality: higher is better &nbsp;|&nbsp; Workload Expected: higher is worse
+          </div>
+          <table className="profile-table">
+            <thead>
+              <tr>
+                <th>Day</th><th>Energy /7</th><th>Sleep Quality /5</th>
+                <th>Workload Expected /7</th><th>Appraisal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {workdays.map((d, i) => {
+                const pre = d.ema?.pre_shift;
+                if (!pre) return null;
+                return (
+                  <tr key={i}>
+                    <td><strong>{d.weekday}</strong></td>
+                    <td style={{color: scaleColor(pre.energy_1_7, 7, true)}}>{pre.energy_1_7}/7</td>
+                    <td style={{color: scaleColor(pre.sleep_quality_1_5, 5, true)}}>{pre.sleep_quality_1_5}/5</td>
+                    <td style={{color: scaleColor(pre.workload_expected_1_7, 7, false)}}>{pre.workload_expected_1_7}/7</td>
+                    <td style={{color: pre.appraisal === "threat" ? "#c0392b" : pre.appraisal === "challenge" ? "#27ae60" : "#888"}}>
+                      {pre.appraisal}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          <div className="section-label" style={{marginBottom: 8}}>Post-shift · all scales: higher is worse</div>
+          <table className="profile-table">
+            <thead>
+              <tr>
+                <th>Day</th><th>Fatigue /7</th><th>Stress /7</th><th>Detachment Difficulty /7</th>
+              </tr>
+            </thead>
+            <tbody>
+              {workdays.map((d, i) => {
+                const post = d.ema?.post_shift;
+                if (!post) return null;
+                return (
+                  <tr key={i}>
+                    <td><strong>{d.weekday}</strong></td>
+                    <td style={{color: scaleColor(post.fatigue_1_7, 7, false)}}>{post.fatigue_1_7}/7</td>
+                    <td style={{color: scaleColor(post.stress_1_7, 7, false)}}>{post.stress_1_7}/7</td>
+                    <td style={{color: scaleColor(post.detachment_difficulty_1_7, 7, false)}}>{post.detachment_difficulty_1_7}/7</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+
+    function SelfReportTab({ workdays, ws }) {
+      return (
+        <div>
+          {ws.self_report_ceiling && (
+            <div className="ceiling-note">
+              ⚠ {ws.self_report_ceiling.note}
+            </div>
+          )}
+          <div className="ema-entries">
+            {workdays.map((d, i) => {
+              const pre  = d.ema?.pre_shift;
+              const post = d.ema?.post_shift;
+              if (!post) return null;
+              return (
+                <div key={i}>
+                  <div className="ema-day">{d.weekday} · {d.date}</div>
+                  {pre && (
+                    <div className="ema-pre">
+                      <span className="ema-tag">Pre-shift</span>
+                      Energy {pre.energy_1_7}/7 · Sleep quality {pre.sleep_quality_1_5}/5 · Appraisal: <em>{pre.appraisal}</em>
+                    </div>
+                  )}
+                  <div className="ema-bubble">{post.free_text}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    function EnvTab({ workdays, targets }) {
+      const params = [
+        { key: "co2_ppm_mean",                label: "CO₂ (ppm)",       targetStr: "<800",   isBad: v => v > 800 },
+        { key: "sound_level_dba_mean",         label: "Sound (dBA)",     targetStr: "~45",    isBad: v => v > 55 },
+        { key: "illuminance_lux_mean",         label: "Illuminance (lux)",targetStr: "~100",  isBad: v => false },
+        { key: "color_temp_kelvin_mean",       label: "Color Temp (K)",  targetStr: "~3000",  isBad: v => v > 4000 },
+        { key: "air_temperature_celsius_mean", label: "Air Temp (°C)",   targetStr: "21–23",  isBad: v => v > 23 },
+        { key: "relative_humidity_pct_mean",   label: "Humidity (%)",    targetStr: "40–60",  isBad: v => v < 40 || v > 60 },
+      ];
+      return (
+        <div>
+          <table className="profile-table">
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Target</th>
+                {workdays.map(d => <th key={d.weekday}>{d.weekday}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {params.map(p => (
+                <tr key={p.key}>
+                  <td>{p.label}</td>
+                  <td style={{color: "#aaa"}}>{p.targetStr}</td>
+                  {workdays.map((d, i) => {
+                    const raw = d.environment_core_hours[p.key];
+                    const val = typeof raw === "number" ? (raw % 1 === 0 ? raw : parseFloat(raw.toFixed(1))) : "—";
+                    return (
+                      <td key={i} style={{color: p.isBad(raw) ? "#c0392b" : "#444"}}>{val}</td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="env-note">Core shift hours (09:00–17:00) only. Red = outside recommended range.</div>
+        </div>
+      );
+    }
+
+    function JimmyProfile({ data, profileTab, setProfileTab, onBack }) {
+      const workdays = data.daily.filter(d => d.is_workday);
+      const TAB_LABELS = ["Physiological", "Psychological", "Self-reported", "Environmental"];
+      return (
+        <div className="center-panel">
+          <div className="profile-header">
+            <button className="back-btn" onClick={onBack}>← Back</button>
+            <h2>Jimmy <span className="profile-period">Aug 3–9, 2026</span></h2>
+            <span className="risk-badge high">High Risk</span>
+          </div>
+          <div className="profile-tabs">
+            {TAB_LABELS.map(t => (
+              <button
+                key={t}
+                className={`profile-tab ${profileTab === t.toLowerCase() ? "active" : ""}`}
+                onClick={() => setProfileTab(t.toLowerCase())}
+              >{t}</button>
+            ))}
+          </div>
+          {profileTab === "physiological" && <PhysioTab daily={data.daily} ws={data.week_summary} />}
+          {profileTab === "psychological"  && <PsychTab workdays={workdays} />}
+          {profileTab === "self-reported"  && <SelfReportTab workdays={workdays} ws={data.week_summary} />}
+          {profileTab === "environmental"  && <EnvTab workdays={workdays} targets={data.ieq_targets} />}
+        </div>
+      );
+    }
+
     function buildJimmyAlert(data) {
       const ws    = data.week_summary;
       const daily = data.daily;
@@ -591,11 +922,17 @@
       const [dismissed, setDismissed] = useState(new Set());
       const [activeNav, setActiveNav] = useState("Alerts");
       const [activeTab, setActiveTab] = useState("Dashboard");
+      const [jimmyData, setJimmyData] = useState(null);
+      const [profileView, setProfileView] = useState(null);
+      const [profileTab, setProfileTab]   = useState("physiological");
 
       useEffect(() => {
         fetch("jimmy_week.json")
           .then(r => r.json())
-          .then(data => setAlerts(prev => [...prev, buildJimmyAlert(data)]))
+          .then(data => {
+            setJimmyData(data);
+            setAlerts(prev => [...prev, buildJimmyAlert(data)]);
+          })
           .catch(err => console.warn("Could not load jimmy_week.json:", err));
       }, []);
 
@@ -660,8 +997,15 @@
 
             <div className="content">
 
-              {/* ── Team Health view ── */}
-              {activeNav === "Team Health" ? (
+              {/* ── Jimmy profile drill-down ── */}
+              {profileView === "jimmy" && jimmyData ? (
+                <JimmyProfile
+                  data={jimmyData}
+                  profileTab={profileTab}
+                  setProfileTab={setProfileTab}
+                  onBack={() => setProfileView(null)}
+                />
+              ) : activeNav === "Team Health" ? (
                 <div className="center-panel">
                   <div className="alert-header">
                     <h2>Team Health</h2>
@@ -681,6 +1025,11 @@
                             const i = alerts.findIndex(a => a.id === r.alertId);
                             if (i !== -1) { setIdx(i); setActiveNav("Alerts"); }
                           }}>View alert →</a>
+                        )}
+                        {r.name === "Jimmy" && jimmyData && (
+                          <a className="roster-view-link" onClick={() => { setProfileView("jimmy"); setProfileTab("physiological"); }}>
+                            View profile →
+                          </a>
                         )}
                       </div>
                     ))}
