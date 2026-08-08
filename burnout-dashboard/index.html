@@ -606,17 +606,9 @@
       const isDismissed = dismissed.has(alert.id);
       const accent      = alert.risk === "High" ? "#c0392b" : "#e07b54";
 
-      const advance = () => { if (idx < total - 1) setIdx(i => i + 1); };
+      const handleAssign = () => setAssigned(s => new Set([...s, alert.id]));
 
-      const handleAssign = () => {
-        setAssigned(s => new Set([...s, alert.id]));
-        advance();
-      };
-
-      const handleDismiss = () => {
-        setDismissed(s => new Set([...s, alert.id]));
-        advance();
-      };
+      const handleDismiss = () => setDismissed(s => new Set([...s, alert.id]));
 
       let lastGroup = null;
 
@@ -659,7 +651,7 @@
                 <button
                   key={tab}
                   className={`tab ${activeTab === tab ? "active" : ""}`}
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => { setActiveTab(tab); if (tab === "Alerts") setActiveNav("Alerts"); }}
                 >
                   {tab}
                 </button>
